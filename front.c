@@ -17,23 +17,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <signal.h>
 #include <unistd.h>
 #include <gtk/gtk.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include "cfgfile.h"
 #include "cmd.h"
 
 #define CFGFILE		"/etc/spnavrc"
 
+int get_daemon_pid(void);	/* back.c */
+
 static void update_cfg(void);
 static void layout(void);
-static void sig(int s);
 static void chk_handler(GtkToggleButton *bn, void *data);
 static void slider_handler(GtkRange *rng, void *data);
+static void bn_handler(GtkButton *bn, void *data);
 
 static void add_child(GtkWidget *parent, GtkWidget *child);
 static GtkWidget *create_vbox(GtkWidget *parent);
-static GtkWidget *create_hbox(GtkWidget *parent);
 
 static GtkWidget *win;
 
@@ -52,9 +56,6 @@ void frontend(int pfd)
 #endif
 
 	pipe_fd = pfd;
-
-	signal(SIGUSR1, sig);
-	signal(SIGUSR2, sig);
 
 	gtk_init(&argc, 0);
 
@@ -79,11 +80,56 @@ static void update_cfg(void)
 	write(pipe_fd, &cfg, sizeof cfg);
 }
 
+static int query_x11(void)
+{
+	Display *dpy;
+	Window win, root_win;
+	XTextProperty wname;
+	Atom type, command_event;
+	int fmt;
+	unsigned long nitems, bytes_after;
+	unsigned char *prop;
+
+	if(!(dpy = XOpenDisplay(0))) {
+		return 0;
+	}
+	root_win = DefaultRootWindow(dpy);
+
+	if((command_event = XInternAtom(dpy, "CommandEvent", True)) == None) {
+		XCloseDisplay(dpy);
+		return 0;
+	}
+
+	XGetWindowProperty(dpy, root_win, command_event, 0, 1, False, AnyPropertyType,
+			&type, &fmt, &nitems, &bytes_after, &prop);
+	if(!prop) {
+		XCloseDisplay(dpy);
+		return 0;
+	}
+
+	win = *(Window*)prop;
+	XFree(prop);
+
+	if(!XGetWMName(dpy, win, &wname) || strcmp("Magellan Window", (char*)wname.value) != 0) {
+		XCloseDisplay(dpy);
+		return 0;
+	}
+	XCloseDisplay(dpy);
+
+	/* found a magellan window, still it might belong to the 3dxsrv driver */
+	if(get_daemon_pid() == -1) {
+		return 0;
+	}
+
+	/* this could still mean that the daemon crashed and left behind the pidfile... */
+	return 1;	/* ... but wtf */
+}
+
 static void layout(void)
 {
 	int i;
 	GtkWidget *w;
-	GtkWidget *vbox, *hbox, *bbox, *tbl, *frm;
+	GtkWidget *vbox, *bbox, *tbl, *frm;
 
 	vbox = create_vbox(win);
 
@@ -92,6 +138,9 @@ static void layout(void)
 
 	tbl = gtk_table_new(3, 4, FALSE);
 	add_child(frm, tbl);
+
+	gtk_table_set_row_spacings(GTK_TABLE(tbl), 2);
+	gtk_table_set_col_spacings(GTK_TABLE(tbl), 2);
 
 	gtk_table_attach_defaults(GTK_TABLE(tbl), gtk_label_new("X"), 1, 2, 0, 1);
 	gtk_table_attach_defaults(GTK_TABLE(tbl), gtk_label_new("Y"), 2, 3, 0, 1);
@@ -118,6 +167,41 @@ static void layout(void)
 	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), 0);
 	add_child(frm, w);
 
+	frm = gtk_frame_new("X11 magellan API");
+	add_child(vbox, frm);
+
+	bbox = gtk_hbutton_box_new();
+	add_child(frm, bbox);
+
+	w = gtk_button_new_with_label("start");
+	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)0);
+	add_child(bbox, w);
+
+	w = gtk_button_new_with_label("stop");
+	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)1);
+	add_child(bbox, w);
+
+	w = gtk_button_new_with_label("check");
+	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)2);
+	add_child(bbox, w);
+
+	/*
+	w = gtk_check_button_new_with_label("enable X11 magellan API");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), query_x11());
+	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)10);
+	add_child(frm, w);
+	*/
+
+	frm = gtk_frame_new("misc");
+	add_child(vbox, frm);
+
+	bbox = gtk_hbutton_box_new();
+	add_child(frm, bbox);
+
+	w = gtk_button_new_with_label("ping daemon");
+	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)3);
+	add_child(bbox, w);
+
 	bbox = gtk_hbutton_box_new();
 	add_child(vbox, bbox);
 
@@ -130,36 +214,15 @@ static void layout(void)
 	add_child(bbox, w);
 }
 
-static void sig(int s)
-{
-	GtkWidget *dlg;
-
-	switch(s) {
-	case SIGUSR1:	/* daemon alive */
-		dlg = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "The spacenavd driver is running fine.");
-		g_signal_connect_swapped(dlg, "response", G_CALLBACK(gtk_widget_destroy), dlg);
-		break;
-
-	case SIGUSR2:	/* daemon dead */
-		dlg = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "The driver isn't running at the moment.\n"
-				"You can still modify the configuration through this panel though.");
-		g_signal_connect_swapped(dlg, "response", G_CALLBACK(gtk_widget_destroy), dlg);
-		break;
-
-	default:
-		break;
-	}
-}
-
 static void chk_handler(GtkToggleButton *bn, void *data)
 {
 	int which = (int)data;
 	int state = gtk_toggle_button_get_active(bn);
 
-	cfg.invert[which] = state;
-	update_cfg();
+	if(which < 6) {
+		cfg.invert[which] = state;
+		update_cfg();
+	}
 }
 
 static void slider_handler(GtkRange *rng, void *data)
@@ -168,6 +231,50 @@ static void slider_handler(GtkRange *rng, void *data)
 	update_cfg();
 }
 
+static void bn_handler(GtkButton *bn, void *data)
+{
+	GtkWidget *dlg;
+	int id = (int)data;
+	int tmp;
+
+	switch(id) {
+	case 0:
+	case 1:
+		tmp = id ? CMD_STOPX : CMD_STARTX;
+		write(pipe_fd, &tmp, 1);
+		break;
+
+	case 2:
+		dlg = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "The X11 Magellan (3dxsrv-compatible) API is %s.",
+				query_x11() ? "enabled" : "disabled");
+		gtk_widget_show_all(dlg);
+		g_signal_connect_swapped(dlg, "response", G_CALLBACK(gtk_widget_destroy), dlg);
+		break;
+
+	case 3:
+		tmp = CMD_PING;
+		write(pipe_fd, &tmp, 1);
+		read(pipe_fd, &tmp, 1);
+
+		if(tmp) {	/* daemon alive */
+			dlg = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "The spacenavd driver is running fine.");
+			gtk_widget_show_all(dlg);
+			g_signal_connect_swapped(dlg, "response", G_CALLBACK(gtk_widget_destroy), dlg);
+		} else {	/* daemon dead */
+			dlg = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "The driver isn't running at the moment.\n"
+				"You can still modify the configuration through this panel though.");
+			gtk_widget_show_all(dlg);
+			g_signal_connect_swapped(dlg, "response", G_CALLBACK(gtk_widget_destroy), dlg);
+		}
+		break;
+
+	default:
+		break;
+	}
+}
 
 static void add_child(GtkWidget *parent, GtkWidget *child)
 {
@@ -183,13 +290,6 @@ static void add_child(GtkWidget *parent, GtkWidget *child)
 static GtkWidget *create_vbox(GtkWidget *parent)
 {
 	GtkWidget *box = gtk_vbox_new(FALSE, 5);
-	add_child(parent, box);
-	return box;
-}
-
-static GtkWidget *create_hbox(GtkWidget *parent)
-{
-	GtkWidget *box = gtk_hbox_new(FALSE, 5);
 	add_child(parent, box);
 	return box;
 }
