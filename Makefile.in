@@ -1,11 +1,11 @@
-obj = spnavcfg.o front.o back.o ../spacenavd/cfgfile.o
+obj = spnavcfg.o front.o back.o cfgfile.o
 bin = spnavcfg
 
 warn = -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
 
 CC = gcc
 INSTALL = install
-CFLAGS = -pedantic $(warn) $(dbg) $(opt) -I../spacenavd `pkg-config --cflags gtk+-2.0`
+CFLAGS = -pedantic $(warn) $(dbg) $(opt) `pkg-config --cflags gtk+-2.0`
 LDFLAGS = `pkg-config --libs gtk+-2.0`
 
 $(bin): $(obj)
