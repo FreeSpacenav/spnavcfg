@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <signal.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 void frontend(int pfd);
 void backend(int pfd);
@@ -33,7 +35,8 @@ int main(int argc, char **argv)
 
 	signal(SIGCHLD, sig);
 
-	pipe(pipefd);
+	/*pipe(pipefd);*/
+	socketpair(AF_UNIX, SOCK_STREAM, 0, pipefd);
 	if((cpid = fork()) == 0) {
 		/* child should be the setuid-root backend, write cfg and kill */
 		close(pipefd[1]);

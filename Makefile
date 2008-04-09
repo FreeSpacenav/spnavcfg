@@ -3,9 +3,11 @@ PREFIX = /usr/local
 obj = spnavcfg.o front.o back.o ../spacenavd/cfgfile.o
 bin = spnavcfg
 
+warn = -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
+
 CC = gcc
 INSTALL = install
-CFLAGS = -pedantic -Wall -g -I../spacenavd `pkg-config --cflags gtk+-2.0`
+CFLAGS = -pedantic $(warn) -g -I../spacenavd `pkg-config --cflags gtk+-2.0`
 LDFLAGS = `pkg-config --libs gtk+-2.0`
 
 $(bin): $(obj)

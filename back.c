@@ -40,7 +40,7 @@ int backend(int pfd)
 
 	for(;;) {
 		ssize_t res;
-		int cmd;
+		int cmd, tmp;
 
 		/* get command */
 		if(read(pfd, &cmd, 1) == -1 && errno != EINTR) {
@@ -50,7 +50,8 @@ int backend(int pfd)
 
 		switch(cmd) {
 		case CMD_PING:
-			kill(getppid(), ((dpid = get_daemon_pid()) == -1) ? SIGUSR2 : SIGUSR1);
+			tmp = (dpid = get_daemon_pid()) != -1;
+			write(pfd, &tmp, 1);
 			break;
 
 		case CMD_CFG:
