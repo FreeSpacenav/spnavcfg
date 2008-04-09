@@ -1,0 +1,21 @@
+spnavcfg 0.1
+------------
+
+1. About
+Spacenav daemon interactive configuration program.
+
+2. Installation
+Requires GTK+ 2 and Xlib headers to be installed.
+./configure, make, make install, as usual (make install part as root).
+
+3. Security
+The binary is installed setuid root in order to be able to modify /etc/spnavrc
+and send signals to the daemon. However, it was designed from start to be as
+secure as possible. spnavcfg launches two processes (see front.c and back.c).
+The frontend that runs all the GUI code drops priviledges to the original uid,
+while the backend that does all the gruntwork keeps effective uid root.
+As long as you don't run the program while logged in as root, it should be very
+secure.
+
+4. Contact
+For bug reports, feature requests, or whatever, contact: nuclear@member.fsf.org
