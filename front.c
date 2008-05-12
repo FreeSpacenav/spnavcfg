@@ -129,7 +129,7 @@ static void layout(void)
 {
 	int i;
 	GtkWidget *w;
-	GtkWidget *vbox, *bbox, *tbl, *frm;
+	GtkWidget *vbox, *vbox2, *bbox, *tbl, *frm;
 
 	vbox = create_vbox(win);
 
@@ -195,8 +195,14 @@ static void layout(void)
 	frm = gtk_frame_new("misc");
 	add_child(vbox, frm);
 
+	vbox2 = create_vbox(frm);
+
+	w = gtk_check_button_new_with_label("enable LED");
+	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)10);
+	add_child(vbox2, w);
+
 	bbox = gtk_hbutton_box_new();
-	add_child(frm, bbox);
+	add_child(vbox2, bbox);
 
 	w = gtk_button_new_with_label("ping daemon");
 	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)3);
@@ -221,6 +227,11 @@ static void chk_handler(GtkToggleButton *bn, void *data)
 
 	if(which < 6) {
 		cfg.invert[which] = state;
+		update_cfg();
+	}
+
+	if(which == 10) {
+		cfg.led = state;
 		update_cfg();
 	}
 }
