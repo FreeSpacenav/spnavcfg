@@ -11,6 +11,9 @@ LDFLAGS = `pkg-config --libs gtk+-2.0`
 $(bin): $(obj)
 	$(CC) -o $@ $(obj) $(LDFLAGS)
 
+%.o: $(srcdir)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
 .PHONY: clean
 clean:
 	rm -f $(obj) $(bin)
