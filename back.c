@@ -43,6 +43,7 @@ int backend(int pfd)
 		int cmd, tmp;
 
 		/* get command */
+		cmd = 0;
 		if(read(pfd, &cmd, 1) == -1 && errno != EINTR) {
 			perror("pipe read blew up in my face! wtf");
 			return -1;
@@ -50,11 +51,13 @@ int backend(int pfd)
 
 		switch(cmd) {
 		case CMD_PING:
+			printf("got CMD_PING\n");
 			tmp = (dpid = get_daemon_pid()) != -1;
 			write(pfd, &tmp, 1);
 			break;
 
 		case CMD_CFG:
+			printf("got CMD_CFG\n");
 			{
 				char *buf = (char*)&cfg;
 				int sz = sizeof cfg;
@@ -68,7 +71,9 @@ int backend(int pfd)
 			break;
 
 		case CMD_STARTX:
+			printf("got CMD_STARTX\n");
 		case CMD_STOPX:
+			printf("got CMD_STOPX\n");
 			if(dpid == -1) {
 				if((dpid = get_daemon_pid()) == -1) {
 					return -1;
@@ -83,6 +88,7 @@ int backend(int pfd)
 			break;
 
 		default:
+			printf("unknown CMD: %d\n", (int)cmd);
 			break;
 		}
 	}
@@ -112,6 +118,7 @@ int get_daemon_pid(void)
 static int update_cfg(void)
 {
 	if(write_cfg(CFGFILE, &cfg) == -1) {
+		fprintf(stderr, "failed to update config file\n");
 		return -1;
 	}
 
