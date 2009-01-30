@@ -1,6 +1,6 @@
 /*
 spnavcfg - an interactive GUI configurator for the spacenavd daemon.
-Copyright (C) 2007 John Tsiombikas <nuclear@siggraph.org>
+Copyright (C) 2007-2009 John Tsiombikas <nuclear@siggraph.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "cmd.h"
 
 #define CFGFILE		"/etc/spnavrc"
+#define PIDFILE		"/var/run/spnavd.pid"
 
 int get_daemon_pid(void);
 static int update_cfg(void);
@@ -97,7 +98,7 @@ int get_daemon_pid(void)
 	FILE *fp;
 	char buf[64];
 
-	if(!(fp = fopen("/tmp/.spnavd.pid", "r"))) {
+	if(!(fp = fopen(PIDFILE, "r"))) {
 		fprintf(stderr, "no spacenav pid file, can't find daemon\n");
 		return -1;
 	}
