@@ -198,6 +198,7 @@ static void layout(void)
 	vbox2 = create_vbox(frm);
 
 	w = gtk_check_button_new_with_label("enable LED");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), cfg.led);
 	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)10);
 	add_child(vbox2, w);
 
