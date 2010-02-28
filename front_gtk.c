@@ -185,7 +185,7 @@ static void layout(void)
 		g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)i);
 	}
 
-	w = gtk_check_button_new_with_label("swap x-y axes");
+	w = gtk_check_button_new_with_label("swap y-z axes");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), cfg.map_axis[1] == 1);
 	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)CHK_SWAP_YZ);
 	add_child(vbox, w);
