@@ -124,7 +124,7 @@ static int update_cfg(void)
 			return -1;
 		}
 	}
-	
+
 	if(kill(dpid, SIGHUP) == -1 && errno != EPERM) {
 		dpid = -1;	/* invalidate pid, will be searched again next time */
 		return -1;

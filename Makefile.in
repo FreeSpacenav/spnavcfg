@@ -1,4 +1,4 @@
-obj = spnavcfg.o front.o back.o cfgfile.o
+obj = spnavcfg.o front_gtk.o back.o cfgfile.o
 bin = spnavcfg
 
 warn = -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast

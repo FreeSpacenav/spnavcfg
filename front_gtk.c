@@ -28,6 +28,34 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define CFGFILE		"/etc/spnavrc"
 
+enum {
+	SLIDER_GLOBAL,
+	SLIDER_TRANS,
+	SLIDER_ROT
+};
+
+enum {
+	BN_START,
+	BN_STOP,
+	BN_CHECK,
+	BN_PING
+};
+
+enum {
+	CHK_INV_TX,
+	CHK_INV_TY,
+	CHK_INV_TZ,
+	CHK_INV_RX,
+	CHK_INV_RY,
+	CHK_INV_RZ,
+
+	CHK_X11,
+	CHK_LED,
+	CHK_SWAP_YZ
+};
+#define IS_CHK_INV(x)	((x) <= CHK_INV_RZ)
+
+
 int get_daemon_pid(void);	/* back.c */
 
 static void update_cfg(void);
@@ -63,6 +91,7 @@ void frontend(int pfd)
 
 	win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(win), "spacenavd configuration");
+	gtk_window_set_default_size(GTK_WINDOW(win), 250, 350);
 	g_signal_connect(G_OBJECT(win), "delete_event", G_CALLBACK(gtk_main_quit), 0);
 	gtk_container_set_border_width(GTK_CONTAINER(win), 4);
 
@@ -156,17 +185,55 @@ static void layout(void)
 		g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)i);
 	}
 
-	/*hbox = create_hbox(vbox);*/
+	w = gtk_check_button_new_with_label("swap x-y axes");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), cfg.map_axis[1] == 1);
+	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)CHK_SWAP_YZ);
+	add_child(vbox, w);
+
 	frm = gtk_frame_new("sensitivity");
 	add_child(vbox, frm);
 
-	w = gtk_hscale_new_with_range(0.0, 4.0, 0.1);
+	tbl = gtk_table_new(3, 2, FALSE);
+	add_child(frm, tbl);
+
+	gtk_table_set_row_spacings(GTK_TABLE(tbl), 2);
+	gtk_table_set_col_spacings(GTK_TABLE(tbl), 2);
+
+	/* -- global sensitivity slider -- */
+	w = gtk_label_new("global");
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 0, 1);
+
+	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
 	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
 	gtk_range_set_value(GTK_RANGE(w), cfg.sensitivity);
 	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), 0);
-	add_child(frm, w);
+	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_GLOBAL);
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 0, 1);
 
+	/* -- translation sensitivity slider -- */
+	w = gtk_label_new("translation");
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 1, 2);
+
+	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
+	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
+	gtk_range_set_value(GTK_RANGE(w), cfg.sens_trans);
+	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
+	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_TRANS);
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 1, 2);
+
+	/* -- rotation sensitivity slider -- */
+	w = gtk_label_new("rotation");
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 2, 3);
+
+	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
+	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
+	gtk_range_set_value(GTK_RANGE(w), cfg.sens_rot);
+	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
+	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_ROT);
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 2, 3);
+
+
+	/*
 	frm = gtk_frame_new("X11 magellan API");
 	add_child(vbox, frm);
 
@@ -174,23 +241,22 @@ static void layout(void)
 	add_child(frm, bbox);
 
 	w = gtk_button_new_with_label("start");
-	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)0);
+	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)BN_START);
 	add_child(bbox, w);
 
 	w = gtk_button_new_with_label("stop");
-	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)1);
+	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)BN_STOP);
 	add_child(bbox, w);
 
 	w = gtk_button_new_with_label("check");
-	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)2);
+	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)BN_CHECK);
 	add_child(bbox, w);
-
-	/*
-	w = gtk_check_button_new_with_label("enable X11 magellan API");
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), query_x11());
-	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)10);
-	add_child(frm, w);
 	*/
+
+	/*w = gtk_check_button_new_with_label("enable");
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), query_x11());
+	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)CHK_X11);
+	add_child(frm, w);*/
 
 	frm = gtk_frame_new("misc");
 	add_child(vbox, frm);
@@ -199,14 +265,14 @@ static void layout(void)
 
 	w = gtk_check_button_new_with_label("enable LED");
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), cfg.led);
-	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)10);
+	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)CHK_LED);
 	add_child(vbox2, w);
 
 	bbox = gtk_hbutton_box_new();
 	add_child(vbox2, bbox);
 
 	w = gtk_button_new_with_label("ping daemon");
-	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)3);
+	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)BN_PING);
 	add_child(bbox, w);
 
 	bbox = gtk_hbutton_box_new();
@@ -223,24 +289,67 @@ static void layout(void)
 
 static void chk_handler(GtkToggleButton *bn, void *data)
 {
+	int tmp;
 	int which = (int)data;
 	int state = gtk_toggle_button_get_active(bn);
 
-	if(which < 6) {
+	if(IS_CHK_INV(which)) {
 		cfg.invert[which] = state;
 		update_cfg();
+		return;
 	}
 
-	if(which == 10) {
+	switch(which) {
+	case CHK_X11:
+		tmp = state ? CMD_STARTX : CMD_STOPX;
+		write(pipe_fd, &tmp, 1);
+		break;
+
+	case CHK_LED:
 		cfg.led = state;
 		update_cfg();
+		break;
+
+	case CHK_SWAP_YZ:
+		tmp = cfg.map_axis[1];
+		cfg.map_axis[1] = cfg.map_axis[2];
+		cfg.map_axis[2] = tmp;
+
+		tmp = cfg.map_axis[4];
+		cfg.map_axis[4] = cfg.map_axis[5];
+		cfg.map_axis[5] = tmp;
+
+		update_cfg();
+		break;
+
+	default:
+		break;
 	}
 }
 
 static void slider_handler(GtkRange *rng, void *data)
 {
-	cfg.sensitivity = gtk_range_get_value(rng);
-	update_cfg();
+	int id = (int)data;
+
+	switch(id) {
+	case SLIDER_GLOBAL:
+		cfg.sensitivity = gtk_range_get_value(rng);
+		update_cfg();
+		break;
+
+	case SLIDER_TRANS:
+		cfg.sens_trans = gtk_range_get_value(rng);
+		update_cfg();
+		break;
+
+	case SLIDER_ROT:
+		cfg.sens_rot = gtk_range_get_value(rng);
+		update_cfg();
+		break;
+
+	default:
+		break;
+	}
 }
 
 static void bn_handler(GtkButton *bn, void *data)
@@ -250,13 +359,13 @@ static void bn_handler(GtkButton *bn, void *data)
 	int tmp;
 
 	switch(id) {
-	case 0:
-	case 1:
-		tmp = id ? CMD_STOPX : CMD_STARTX;
+	case BN_START:
+	case BN_STOP:
+		tmp = id == BN_STOP ? CMD_STOPX : CMD_STARTX;
 		write(pipe_fd, &tmp, 1);
 		break;
 
-	case 2:
+	case BN_CHECK:
 		dlg = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "The X11 Magellan (3dxsrv-compatible) API is %s.",
 				query_x11() ? "enabled" : "disabled");
@@ -264,7 +373,7 @@ static void bn_handler(GtkButton *bn, void *data)
 		g_signal_connect_swapped(dlg, "response", G_CALLBACK(gtk_widget_destroy), dlg);
 		break;
 
-	case 3:
+	case BN_PING:
 		tmp = CMD_PING;
 		write(pipe_fd, &tmp, 1);
 		read(pipe_fd, &tmp, 1);

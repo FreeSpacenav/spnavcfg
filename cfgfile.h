@@ -1,6 +1,6 @@
 /*
 spacenavd - a free software replacement driver for 6dof space-mice.
-Copyright (C) 2007-2009 John Tsiombikas <nuclear@siggraph.org>
+Copyright (C) 2007-2009 John Tsiombikas <nuclear@member.fsf.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,13 +15,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifndef CFGFILE_H_
 #define CFGFILE_H_
 
+#define MAX_BUTTONS		64
+
 struct cfg {
-	float sensitivity;
+	float sensitivity, sens_trans, sens_rot;
 	int dead_threshold;
 	int invert[6];
+	int map_axis[6];
+	int map_button[MAX_BUTTONS];
 	int led;
 };
 
