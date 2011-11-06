@@ -30,8 +30,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 enum {
 	SLIDER_GLOBAL,
-	SLIDER_TRANS,
-	SLIDER_ROT
+	SLIDER_TRANS_X,
+	SLIDER_TRANS_Y,
+	SLIDER_TRANS_Z,
+	SLIDER_ROT_X,
+	SLIDER_ROT_Y,
+	SLIDER_ROT_Z,
+	SLIDER_DEADZONE
 };
 
 enum {
@@ -190,48 +195,113 @@ static void layout(void)
 	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)CHK_SWAP_YZ);
 	add_child(vbox, w);
 
-	frm = gtk_frame_new("sensitivity");
+	frm = gtk_frame_new("sensitivity global");
 	add_child(vbox, frm);
 
-	tbl = gtk_table_new(3, 2, FALSE);
-	add_child(frm, tbl);
-
-	gtk_table_set_row_spacings(GTK_TABLE(tbl), 2);
-	gtk_table_set_col_spacings(GTK_TABLE(tbl), 2);
-
 	/* -- global sensitivity slider -- */
-	w = gtk_label_new("global");
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 0, 1);
-
+	
 	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
 	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
 	gtk_range_set_value(GTK_RANGE(w), cfg.sensitivity);
 	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
 	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_GLOBAL);
+	add_child(frm, w);
+
+
+	frm = gtk_frame_new("sensitivity translation");
+	add_child(vbox, frm);
+
+	tbl = gtk_table_new(2, 3, FALSE);
+	add_child(frm, tbl);
+
+	gtk_table_set_row_spacings(GTK_TABLE(tbl), 2);
+	gtk_table_set_col_spacings(GTK_TABLE(tbl), 2);
+
+	/* -- translation-x sensitivity slider -- */
+	w = gtk_label_new("X");
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 0, 1);
+
+	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
+	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
+	gtk_range_set_value(GTK_RANGE(w), cfg.sens_trans[0]);
+	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
+	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_TRANS_X);
 	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 0, 1);
 
-	/* -- translation sensitivity slider -- */
-	w = gtk_label_new("translation");
+	/* -- translation-y sensitivity slider -- */
+	w = gtk_label_new("Y");
 	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 1, 2);
 
 	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
 	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.sens_trans);
+	gtk_range_set_value(GTK_RANGE(w), cfg.sens_trans[1]);
 	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_TRANS);
+	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_TRANS_Y);
 	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 1, 2);
 
-	/* -- rotation sensitivity slider -- */
-	w = gtk_label_new("rotation");
+	/* -- translation-z sensitivity slider -- */
+	w = gtk_label_new("Z");
 	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 2, 3);
 
 	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
 	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.sens_rot);
+	gtk_range_set_value(GTK_RANGE(w), cfg.sens_trans[2]);
 	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_ROT);
+	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_TRANS_Z);
 	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 2, 3);
 
+	frm = gtk_frame_new("sensitivity roation");
+	add_child(vbox, frm);
+
+	tbl = gtk_table_new(2, 3, FALSE);
+	add_child(frm, tbl);
+
+	gtk_table_set_row_spacings(GTK_TABLE(tbl), 2);
+	gtk_table_set_col_spacings(GTK_TABLE(tbl), 2);
+
+	/* -- rotation-x sensitivity slider -- */
+	w = gtk_label_new("X");
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 0, 1);
+
+	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
+	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
+	gtk_range_set_value(GTK_RANGE(w), cfg.sens_rot[0]);
+	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
+	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_ROT_X);
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 0, 1);
+
+	/* -- rotation-y sensitivity slider -- */
+	w = gtk_label_new("Y");
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 1, 2);
+
+	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
+	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
+	gtk_range_set_value(GTK_RANGE(w), cfg.sens_rot[1]);
+	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
+	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_ROT_Y);
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 1, 2);
+
+	/* -- rotation-z sensitivity slider -- */
+	w = gtk_label_new("Z");
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 2, 3);
+
+	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
+	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
+	gtk_range_set_value(GTK_RANGE(w), cfg.sens_rot[2]);
+	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
+	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_ROT_Z);
+	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 2, 3);
+
+	/* -- deadzone slider -- */
+	frm = gtk_frame_new("deadzone");
+	add_child(vbox, frm);
+	
+	w = gtk_hscale_new_with_range(0.0, 4.0, 0.1);
+	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
+	gtk_range_set_value(GTK_RANGE(w), cfg.sensitivity);
+	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
+	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_DEADZONE);
+	add_child(frm, w);
 
 	/*
 	frm = gtk_frame_new("X11 magellan API");
@@ -337,13 +407,38 @@ static void slider_handler(GtkRange *rng, void *data)
 		update_cfg();
 		break;
 
-	case SLIDER_TRANS:
-		cfg.sens_trans = gtk_range_get_value(rng);
+	case SLIDER_TRANS_X:
+		cfg.sens_trans[0] = gtk_range_get_value(rng);
 		update_cfg();
 		break;
 
-	case SLIDER_ROT:
-		cfg.sens_rot = gtk_range_get_value(rng);
+	case SLIDER_TRANS_Y:
+		cfg.sens_trans[1] = gtk_range_get_value(rng);
+		update_cfg();
+		break;
+
+	case SLIDER_TRANS_Z:
+		cfg.sens_trans[2] = gtk_range_get_value(rng);
+		update_cfg();
+		break;
+
+	case SLIDER_ROT_X:
+		cfg.sens_rot[0] = gtk_range_get_value(rng);
+		update_cfg();
+		break;
+
+	case SLIDER_ROT_Y:
+		cfg.sens_rot[1] = gtk_range_get_value(rng);
+		update_cfg();
+		break;
+
+	case SLIDER_ROT_Z:
+		cfg.sens_rot[2] = gtk_range_get_value(rng);
+		update_cfg();
+		break;
+
+	case SLIDER_DEADZONE:
+		cfg.dead_threshold = gtk_range_get_value(rng);
 		update_cfg();
 		break;
 
