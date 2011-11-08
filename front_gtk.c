@@ -63,6 +63,8 @@ enum {
 
 int get_daemon_pid(void);	/* back.c */
 
+static const int def_axinv[] = {0, 1, 1, 0, 1, 1};
+
 static void update_cfg(void);
 static void layout(void);
 static void chk_handler(GtkToggleButton *bn, void *data);
@@ -162,8 +164,7 @@ static int query_x11(void)
 static void layout(void)
 {
 	int i;
-	GtkWidget *w;
-	GtkWidget *vbox, *vbox2, *bbox, *tbl, *frm;
+	GtkWidget *w, *vbox, *vbox2, *bbox, *tbl, *frm;
 
 	vbox = create_vbox(win);
 
@@ -187,6 +188,9 @@ static void layout(void)
 		int y = i / 3 + 1;
 		w = gtk_check_button_new();
 		gtk_table_attach_defaults(GTK_TABLE(tbl), w, x, x + 1, y, y + 1);
+		if(cfg.invert[i] != def_axinv[i]) {
+			gtk_toggle_button_set_active(w, True);
+		}
 		g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)i);
 	}
 
@@ -206,7 +210,6 @@ static void layout(void)
 	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
 	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_GLOBAL);
 	add_child(frm, w);
-
 
 	frm = gtk_frame_new("sensitivity translation");
 	add_child(vbox, frm);
@@ -296,9 +299,9 @@ static void layout(void)
 	frm = gtk_frame_new("deadzone");
 	add_child(vbox, frm);
 	
-	w = gtk_hscale_new_with_range(0.0, 4.0, 0.1);
+	w = gtk_hscale_new_with_range(0.0, 30.0, 1.0);
 	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.sensitivity);
+	gtk_range_set_value(GTK_RANGE(w), cfg.dead_threshold[0]);
 	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
 	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_DEADZONE);
 	add_child(frm, w);
@@ -364,7 +367,7 @@ static void chk_handler(GtkToggleButton *bn, void *data)
 	int state = gtk_toggle_button_get_active(bn);
 
 	if(IS_CHK_INV(which)) {
-		cfg.invert[which] = state;
+		cfg.invert[which] = !cfg.invert[which];
 		update_cfg();
 		return;
 	}
@@ -400,6 +403,7 @@ static void chk_handler(GtkToggleButton *bn, void *data)
 static void slider_handler(GtkRange *rng, void *data)
 {
 	int id = (int)data;
+	int i;
 
 	switch(id) {
 	case SLIDER_GLOBAL:
@@ -438,7 +442,9 @@ static void slider_handler(GtkRange *rng, void *data)
 		break;
 
 	case SLIDER_DEADZONE:
-		cfg.dead_threshold = gtk_range_get_value(rng);
+		for(i=0; i<6; i++) {
+			cfg.dead_threshold[i] = gtk_range_get_value(rng);
+		}
 		update_cfg();
 		break;
 
