@@ -22,7 +22,20 @@ clean:
 install:
 	$(INSTALL) -d $(PREFIX)/bin
 	$(INSTALL) -m 4775 $(bin) $(PREFIX)/bin/$(bin)
+	mkdir -p $(PREFIX)/share/pixmaps
+	cp icons/spnavcfg-*.png $(PREFIX)/share/pixmaps/
+	for i in 48 128 256; do \
+		destdir=$(PREFIX)/share/icons/hicolor/$${i}x$${i}/apps; \
+		mkdir -p $$destdir; \
+		cd $$destdir && ln -s ../../../../pixmaps/spnavcfg-$${i}x$${i}.png spnavcfg-$${i}x$${i}.png; \
+	done
+
 
 .PHONY: uninstall
 uninstall:
 	rm -f $(PREFIX)/bin/$(bin)
+	rm -f $(PREFIX)/share/pixmaps/spnavcfg-*.png
+	for i in 48 128 256; do \
+		destdir=$(PREFIX)/share/icons/hicolor/$${i}x$${i}/apps; \
+		rm -f $${destdir}/spnavcfg-$${i}x$${i}.png; \
+	done
