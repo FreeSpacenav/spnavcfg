@@ -1,22 +1,32 @@
 obj = spnavcfg.o front_gtk.o back.o cfgfile.o
+dep = $(obj:.o=.d)
 bin = spnavcfg
 
-warn = -Wall -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast
+warn = -Wall
 
 CC = gcc
+SED = sed
 INSTALL = install
-CFLAGS = -pedantic $(warn) $(dbg) $(opt) `pkg-config --cflags gtk+-2.0`
-LDFLAGS = `pkg-config --libs gtk+-2.0` -lX11
+CFLAGS = -pedantic $(warn) $(dbg) $(opt) `pkg-config --cflags gtk+-2.0 gmodule-export-2.0`
+LDFLAGS = `pkg-config --libs gtk+-2.0 gmodule-export-2.0` -lX11
 
 $(bin): $(obj)
 	$(CC) -o $@ $(obj) $(LDFLAGS)
 
-%.o: $(srcdir)/%.c
+-include $(dep)
+
+%.o: $(srcdir)/%.c | $(srcdir)/ui.h
 	$(CC) $(CFLAGS) -c $< -o $@
+	$(CPP) $(CFLAGS) $< -MM -MT $@ >$(@:.o=.d)
+
+$(srcdir)/ui.h: $(srcdir)/ui/ui.xml
+	echo 'static const char *ui_xml =' >$@
+	$(SED) 's/"/\\"/g; s/^.*$$/	"&\\n"/' $< >>$@
+	echo ';' >>$@
 
 .PHONY: clean
 clean:
-	rm -f $(obj) $(bin)
+	rm -f $(obj) $(bin) $(srcdir)/ui.h
 
 .PHONY: install
 install:
@@ -27,7 +37,8 @@ install:
 	for i in 48 128 256; do \
 		destdir=$(PREFIX)/share/icons/hicolor/$${i}x$${i}/apps; \
 		mkdir -p $$destdir; \
-		cd $$destdir && ln -s ../../../../pixmaps/spnavcfg-$${i}x$${i}.png spnavcfg-$${i}x$${i}.png; \
+		rm -f $$destdir/spnavcfg-$${i}x$${i}.png; \
+		ln -s $(PREFIX)/share/pixmaps/spnavcfg-$${i}x$${i}.png $$destdir/spnavcfg-$${i}x$${i}.png; \
 	done
 
 
