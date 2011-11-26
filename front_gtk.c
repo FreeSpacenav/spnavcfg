@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,59 +26,85 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <X11/Xutil.h>
 #include "cfgfile.h"
 #include "cmd.h"
+#include "ui.h"
 
 #define CFGFILE		"/etc/spnavrc"
 
-enum {
-	SLIDER_GLOBAL,
-	SLIDER_TRANS_X,
-	SLIDER_TRANS_Y,
-	SLIDER_TRANS_Z,
-	SLIDER_ROT_X,
-	SLIDER_ROT_Y,
-	SLIDER_ROT_Z,
-	SLIDER_DEADZONE
-};
+#define CHK_AXINV_TRANS_X			"axinv_trans_x"
+#define CHK_AXINV_TRANS_Y			"axinv_trans_y"
+#define CHK_AXINV_TRANS_Z			"axinv_trans_z"
 
-enum {
-	BN_START,
-	BN_STOP,
-	BN_CHECK,
-	BN_PING
-};
+#define CHK_AXINV_ROT_X				"axinv_rot_x"
+#define CHK_AXINV_ROT_Y				"axinv_rot_y"
+#define CHK_AXINV_ROT_Z				"axinv_rot_z"
 
-enum {
-	CHK_INV_TX,
-	CHK_INV_TY,
-	CHK_INV_TZ,
-	CHK_INV_RX,
-	CHK_INV_RY,
-	CHK_INV_RZ,
+#define CHK_SWAP_YZ					"swap_yz"
 
-	CHK_X11,
-	CHK_LED,
-	CHK_SWAP_YZ
-};
-#define IS_CHK_INV(x)	((x) <= CHK_INV_RZ)
+#define CHK_ENABLE_LED				"enable_led"
+#define CHK_GRAB_DEVICE				"grab_device"
+
+#define SLIDER_SENS_GLOBAL			"sens_global"
+
+#define SLIDER_SENS_TRANS			"sens_trans"
+#define SLIDER_SENS_TRANS_X			"sens_trans_x"
+#define SLIDER_SENS_TRANS_Y			"sens_trans_y"
+#define SLIDER_SENS_TRANS_Z			"sens_trans_z"
+
+#define SLIDER_SENS_ROT				"sens_rot"
+#define SLIDER_SENS_ROT_X			"sens_rot_x"
+#define SLIDER_SENS_ROT_Y			"sens_rot_y"
+#define SLIDER_SENS_ROT_Z			"sens_rot_z"
+
+#define SLIDER_DEADZONE				"deadzone"
+#define SLIDER_DEADZONE_TRANS_X		"deadzone_trans_x"
+#define SLIDER_DEADZONE_TRANS_Y		"deadzone_trans_y"
+#define SLIDER_DEADZONE_TRANS_Z		"deadzone_trans_z"
+#define SLIDER_DEADZONE_ROT_X		"deadzone_rot_x"
+#define SLIDER_DEADZONE_ROT_Y		"deadzone_rot_y"
+#define SLIDER_DEADZONE_ROT_Z		"deadzone_rot_z"
+
+#define BTN_PING					"ping_daemon"
+
 
 
 int get_daemon_pid(void);	/* back.c */
 
+enum {TX, TY, TZ, RX, RY, RZ};
+
 static const int def_axinv[] = {0, 1, 1, 0, 1, 1};
 
 static void update_cfg(void);
-static void layout(void);
-static void chk_handler(GtkToggleButton *bn, void *data);
-static void slider_handler(GtkRange *rng, void *data);
-static void bn_handler(GtkButton *bn, void *data);
+static void create_ui(void);
 
-static void add_child(GtkWidget *parent, GtkWidget *child);
-static GtkWidget *create_vbox(GtkWidget *parent);
-
-static GtkWidget *win;
+G_MODULE_EXPORT void chk_handler(GtkToggleButton *bn, gpointer data);
+G_MODULE_EXPORT void slider_handler(GtkRange *rng, gpointer data);
+G_MODULE_EXPORT void bn_handler(GtkButton *bn, gpointer data);
 
 static struct cfg cfg;
 static int pipe_fd;
+
+struct widgets {
+
+	GtkWidget *win;
+	GObject *slider_sens_trans_x;
+	GObject *slider_sens_trans_y;
+	GObject *slider_sens_trans_z;
+	GObject *slider_sens_rot_x;
+	GObject *slider_sens_rot_y;
+	GObject *slider_sens_rot_z;
+	GObject *slider_deadzone_trans_x;
+	GObject *slider_deadzone_trans_y;
+	GObject *slider_deadzone_trans_z;
+	GObject *slider_deadzone_rot_x;
+	GObject *slider_deadzone_rot_y;
+	GObject *slider_deadzone_rot_z;
+
+};
+
+static struct widgets widgets;
+
+
+
 
 void frontend(int pfd)
 {
@@ -96,15 +123,9 @@ void frontend(int pfd)
 
 	read_cfg(CFGFILE, &cfg);
 
-	win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	gtk_window_set_title(GTK_WINDOW(win), "spacenavd configuration");
-	gtk_window_set_default_size(GTK_WINDOW(win), 250, 350);
-	g_signal_connect(G_OBJECT(win), "delete_event", G_CALLBACK(gtk_main_quit), 0);
-	gtk_container_set_border_width(GTK_CONTAINER(win), 4);
+	create_ui();
 
-	layout();
-
-	gtk_widget_show_all(win);
+	gtk_widget_show_all(widgets.win);
 
 	gtk_main();
 }
@@ -161,357 +182,221 @@ static int query_x11(void)
 	return 1;	/* ... but wtf */
 }
 
-static void layout(void)
+static void create_ui(void)
 {
-	int i;
-	GtkWidget *w, *vbox, *vbox2, *bbox, *tbl, *frm;
+	GObject *obj;
+	GtkBuilder *gtk_builder;
 
-	vbox = create_vbox(win);
+	gtk_builder = gtk_builder_new();
+	gtk_builder_add_from_string(gtk_builder, (gchar*)ui_xml, -1, NULL);
 
-	frm = gtk_frame_new("invert axis");
-	add_child(vbox, frm);
+	widgets.win = GTK_WIDGET(gtk_builder_get_object(gtk_builder, "main"));
 
-	tbl = gtk_table_new(3, 4, FALSE);
-	add_child(frm, tbl);
+	obj = gtk_builder_get_object (gtk_builder, CHK_AXINV_TRANS_X);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.invert[TX] != def_axinv[TX]);
+	obj = gtk_builder_get_object (gtk_builder, CHK_AXINV_TRANS_Y);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.invert[TY] != def_axinv[TY]);
+	obj = gtk_builder_get_object (gtk_builder, CHK_AXINV_TRANS_Z);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.invert[TZ] != def_axinv[TZ]);
+	obj = gtk_builder_get_object (gtk_builder, CHK_AXINV_ROT_X);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.invert[RX] != def_axinv[RX]);
+	obj = gtk_builder_get_object (gtk_builder, CHK_AXINV_ROT_Y);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.invert[RY] != def_axinv[RY]);
+	obj = gtk_builder_get_object (gtk_builder, CHK_AXINV_ROT_Z);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.invert[RZ] != def_axinv[RZ]);
 
-	gtk_table_set_row_spacings(GTK_TABLE(tbl), 2);
-	gtk_table_set_col_spacings(GTK_TABLE(tbl), 2);
+	obj = gtk_builder_get_object (gtk_builder, CHK_SWAP_YZ);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.map_axis[1] == 1);
 
-	gtk_table_attach_defaults(GTK_TABLE(tbl), gtk_label_new("X"), 1, 2, 0, 1);
-	gtk_table_attach_defaults(GTK_TABLE(tbl), gtk_label_new("Y"), 2, 3, 0, 1);
-	gtk_table_attach_defaults(GTK_TABLE(tbl), gtk_label_new("Z"), 3, 4, 0, 1);
-	gtk_table_attach_defaults(GTK_TABLE(tbl), gtk_label_new("translation"), 0, 1, 1, 2);
-	gtk_table_attach_defaults(GTK_TABLE(tbl), gtk_label_new("rotation"), 0, 1, 2, 3);
+	obj = gtk_builder_get_object (gtk_builder, SLIDER_SENS_GLOBAL);
+	gtk_range_set_value(GTK_RANGE(obj), cfg.sensitivity);
 
-	for(i=0; i<6; i++) {
-		int x = i % 3 + 1;
-		int y = i / 3 + 1;
-		w = gtk_check_button_new();
-		gtk_table_attach_defaults(GTK_TABLE(tbl), w, x, x + 1, y, y + 1);
-		if(cfg.invert[i] != def_axinv[i]) {
-			gtk_toggle_button_set_active(w, True);
-		}
-		g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)i);
-	}
+	obj = gtk_builder_get_object (gtk_builder, SLIDER_SENS_TRANS);
+	gtk_range_set_value(GTK_RANGE(obj), cfg.sens_trans[0]);
 
-	w = gtk_check_button_new_with_label("swap y-z axes");
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), cfg.map_axis[1] == 1);
-	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)CHK_SWAP_YZ);
-	add_child(vbox, w);
+	widgets.slider_sens_trans_x = gtk_builder_get_object (gtk_builder, SLIDER_SENS_TRANS_X);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_sens_trans_x), cfg.sens_trans[0]);
+	widgets.slider_sens_trans_y = gtk_builder_get_object (gtk_builder, SLIDER_SENS_TRANS_Y);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_sens_trans_y), cfg.sens_trans[1]);
+	widgets.slider_sens_trans_z = gtk_builder_get_object (gtk_builder, SLIDER_SENS_TRANS_Z);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_sens_trans_z), cfg.sens_trans[2]);
 
-	frm = gtk_frame_new("sensitivity global");
-	add_child(vbox, frm);
+	obj = gtk_builder_get_object (gtk_builder, SLIDER_SENS_ROT);
+	gtk_range_set_value(GTK_RANGE(obj), cfg.sens_rot[0]);
 
-	/* -- global sensitivity slider -- */
-	
-	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
-	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.sensitivity);
-	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_GLOBAL);
-	add_child(frm, w);
+	widgets.slider_sens_rot_x = gtk_builder_get_object (gtk_builder, SLIDER_SENS_ROT_X);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_sens_rot_x), cfg.sens_rot[0]);
+	widgets.slider_sens_rot_y = gtk_builder_get_object (gtk_builder, SLIDER_SENS_ROT_Y);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_sens_rot_y), cfg.sens_rot[1]);
+	widgets.slider_sens_rot_z = gtk_builder_get_object (gtk_builder, SLIDER_SENS_ROT_Z);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_sens_rot_z), cfg.sens_rot[2]);
 
-	frm = gtk_frame_new("sensitivity translation");
-	add_child(vbox, frm);
+	obj = gtk_builder_get_object (gtk_builder, SLIDER_DEADZONE);
+	gtk_range_set_value(GTK_RANGE(obj), cfg.dead_threshold[TX]);
 
-	tbl = gtk_table_new(2, 3, FALSE);
-	add_child(frm, tbl);
+	widgets.slider_deadzone_trans_x = gtk_builder_get_object (gtk_builder, SLIDER_DEADZONE_TRANS_X);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_trans_x), cfg.dead_threshold[TX]);
+	widgets.slider_deadzone_trans_y = gtk_builder_get_object (gtk_builder, SLIDER_DEADZONE_TRANS_Y);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_trans_y), cfg.dead_threshold[TY]);
+	widgets.slider_deadzone_trans_z = gtk_builder_get_object (gtk_builder, SLIDER_DEADZONE_TRANS_Z);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_trans_z), cfg.dead_threshold[TZ]);
+	widgets.slider_deadzone_rot_x = gtk_builder_get_object (gtk_builder, SLIDER_DEADZONE_ROT_X);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_rot_x), cfg.dead_threshold[RX]);
+	widgets.slider_deadzone_rot_y = gtk_builder_get_object (gtk_builder, SLIDER_DEADZONE_ROT_Y);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_rot_y), cfg.dead_threshold[RY]);
+	widgets.slider_deadzone_rot_z = gtk_builder_get_object (gtk_builder, SLIDER_DEADZONE_ROT_Z);
+	gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_rot_z), cfg.dead_threshold[RZ]);
 
-	gtk_table_set_row_spacings(GTK_TABLE(tbl), 2);
-	gtk_table_set_col_spacings(GTK_TABLE(tbl), 2);
+	obj = gtk_builder_get_object (gtk_builder, CHK_GRAB_DEVICE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.grab_device);
 
-	/* -- translation-x sensitivity slider -- */
-	w = gtk_label_new("X");
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 0, 1);
+	obj = gtk_builder_get_object (gtk_builder, CHK_ENABLE_LED);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.led);
 
-	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
-	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.sens_trans[0]);
-	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_TRANS_X);
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 0, 1);
+	gtk_builder_connect_signals (gtk_builder, NULL);
 
-	/* -- translation-y sensitivity slider -- */
-	w = gtk_label_new("Y");
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 1, 2);
+	g_object_unref (G_OBJECT (gtk_builder));
 
-	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
-	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.sens_trans[1]);
-	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_TRANS_Y);
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 1, 2);
-
-	/* -- translation-z sensitivity slider -- */
-	w = gtk_label_new("Z");
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 2, 3);
-
-	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
-	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.sens_trans[2]);
-	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_TRANS_Z);
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 2, 3);
-
-	frm = gtk_frame_new("sensitivity roation");
-	add_child(vbox, frm);
-
-	tbl = gtk_table_new(2, 3, FALSE);
-	add_child(frm, tbl);
-
-	gtk_table_set_row_spacings(GTK_TABLE(tbl), 2);
-	gtk_table_set_col_spacings(GTK_TABLE(tbl), 2);
-
-	/* -- rotation-x sensitivity slider -- */
-	w = gtk_label_new("X");
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 0, 1);
-
-	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
-	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.sens_rot[0]);
-	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_ROT_X);
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 0, 1);
-
-	/* -- rotation-y sensitivity slider -- */
-	w = gtk_label_new("Y");
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 1, 2);
-
-	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
-	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.sens_rot[1]);
-	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_ROT_Y);
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 1, 2);
-
-	/* -- rotation-z sensitivity slider -- */
-	w = gtk_label_new("Z");
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 0, 1, 2, 3);
-
-	w = gtk_hscale_new_with_range(0.0, 6.0, 0.1);
-	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.sens_rot[2]);
-	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_ROT_Z);
-	gtk_table_attach_defaults(GTK_TABLE(tbl), w, 1, 2, 2, 3);
-
-	/* -- deadzone slider -- */
-	frm = gtk_frame_new("deadzone");
-	add_child(vbox, frm);
-	
-	w = gtk_hscale_new_with_range(0.0, 30.0, 1.0);
-	gtk_range_set_update_policy(GTK_RANGE(w), GTK_UPDATE_DELAYED);
-	gtk_range_set_value(GTK_RANGE(w), cfg.dead_threshold[0]);
-	gtk_scale_set_value_pos(GTK_SCALE(w), GTK_POS_RIGHT);
-	g_signal_connect(G_OBJECT(w), "value_changed", G_CALLBACK(slider_handler), (void*)SLIDER_DEADZONE);
-	add_child(frm, w);
-
-	/*
-	frm = gtk_frame_new("X11 magellan API");
-	add_child(vbox, frm);
-
-	bbox = gtk_hbutton_box_new();
-	add_child(frm, bbox);
-
-	w = gtk_button_new_with_label("start");
-	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)BN_START);
-	add_child(bbox, w);
-
-	w = gtk_button_new_with_label("stop");
-	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)BN_STOP);
-	add_child(bbox, w);
-
-	w = gtk_button_new_with_label("check");
-	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)BN_CHECK);
-	add_child(bbox, w);
-	*/
-
-	/*w = gtk_check_button_new_with_label("enable");
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), query_x11());
-	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)CHK_X11);
-	add_child(frm, w);*/
-
-	frm = gtk_frame_new("misc");
-	add_child(vbox, frm);
-
-	vbox2 = create_vbox(frm);
-
-	w = gtk_check_button_new_with_label("enable LED");
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), cfg.led);
-	g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(chk_handler), (void*)CHK_LED);
-	add_child(vbox2, w);
-
-	bbox = gtk_hbutton_box_new();
-	add_child(vbox2, bbox);
-
-	w = gtk_button_new_with_label("ping daemon");
-	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), (void*)BN_PING);
-	add_child(bbox, w);
-
-	bbox = gtk_hbutton_box_new();
-	add_child(vbox, bbox);
-
-	/*w = gtk_button_new_from_stock(GTK_STOCK_APPLY);
-	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(bn_handler), 0);
-	add_child(bbox, w);*/
-
-	w = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-	g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(gtk_main_quit), 0);
-	add_child(bbox, w);
 }
 
-static void chk_handler(GtkToggleButton *bn, void *data)
+G_MODULE_EXPORT void chk_handler(GtkToggleButton *bn, gpointer data)
 {
 	int tmp;
-	int which = (int)data;
 	int state = gtk_toggle_button_get_active(bn);
+	const gchar* ctrlname = gtk_buildable_get_name(GTK_BUILDABLE(bn));
 
-	if(IS_CHK_INV(which)) {
-		cfg.invert[which] = !cfg.invert[which];
+	if(strcmp(ctrlname, CHK_AXINV_TRANS_X) == 0) {
+		cfg.invert[TX] = !cfg.invert[TX];
 		update_cfg();
-		return;
-	}
-
-	switch(which) {
-	case CHK_X11:
-		tmp = state ? CMD_STARTX : CMD_STOPX;
-		write(pipe_fd, &tmp, 1);
-		break;
-
-	case CHK_LED:
+	} else if(strcmp(ctrlname, CHK_AXINV_TRANS_Y) == 0) {
+		cfg.invert[TY] = !cfg.invert[TY];
+		update_cfg();
+	} else if(strcmp(ctrlname, CHK_AXINV_TRANS_Z) == 0) {
+		cfg.invert[TZ] = !cfg.invert[TZ];
+		update_cfg();
+	} else if(strcmp(ctrlname, CHK_AXINV_ROT_X) == 0) {
+		cfg.invert[RX] = !cfg.invert[RX];
+		update_cfg();
+	} else if(strcmp(ctrlname, CHK_AXINV_ROT_Y) == 0) {
+		cfg.invert[RY] = !cfg.invert[RY];
+		update_cfg();
+	} else if(strcmp(ctrlname, CHK_AXINV_ROT_Z) == 0) {
+		cfg.invert[RZ] = !cfg.invert[RZ];
+		update_cfg();
+	} else if(strcmp(ctrlname, CHK_GRAB_DEVICE) == 0) {
+		cfg.grab_device = state;
+		update_cfg();
+	} else if(strcmp(ctrlname, CHK_ENABLE_LED) == 0) {
 		cfg.led = state;
 		update_cfg();
-		break;
-
-	case CHK_SWAP_YZ:
-		tmp = cfg.map_axis[1];
-		cfg.map_axis[1] = cfg.map_axis[2];
-		cfg.map_axis[2] = tmp;
-
-		tmp = cfg.map_axis[4];
-		cfg.map_axis[4] = cfg.map_axis[5];
-		cfg.map_axis[5] = tmp;
-
+	} else if(strcmp(ctrlname, CHK_SWAP_YZ) == 0) {
+		tmp = cfg.map_axis[TY];
+		cfg.map_axis[TY] = cfg.map_axis[TZ];
+		cfg.map_axis[TZ] = tmp;
+		tmp = cfg.map_axis[RY];
+		cfg.map_axis[RY] = cfg.map_axis[RZ];
+		cfg.map_axis[RZ] = tmp;
 		update_cfg();
-		break;
-
-	default:
-		break;
 	}
+
 }
 
-static void slider_handler(GtkRange *rng, void *data)
+G_MODULE_EXPORT void slider_handler(GtkRange *rng, gpointer data)
 {
-	int id = (int)data;
 	int i;
+	const gchar* ctrlname = gtk_buildable_get_name(GTK_BUILDABLE(rng));
+	gdouble value = gtk_range_get_value(rng);
 
-	switch(id) {
-	case SLIDER_GLOBAL:
+	if(strcmp(ctrlname, SLIDER_SENS_GLOBAL) == 0) {
 		cfg.sensitivity = gtk_range_get_value(rng);
 		update_cfg();
-		break;
-
-	case SLIDER_TRANS_X:
-		cfg.sens_trans[0] = gtk_range_get_value(rng);
+	} else if(strcmp(ctrlname, SLIDER_SENS_TRANS) == 0) {
+		cfg.sens_trans[0] = cfg.sens_trans[1] = cfg.sens_trans[2] = value;
+		gtk_range_set_value(GTK_RANGE(widgets.slider_sens_trans_x), value);
+		gtk_range_set_value(GTK_RANGE(widgets.slider_sens_trans_y), value);
+		gtk_range_set_value(GTK_RANGE(widgets.slider_sens_trans_z), value);
 		update_cfg();
-		break;
-
-	case SLIDER_TRANS_Y:
-		cfg.sens_trans[1] = gtk_range_get_value(rng);
+	} else if(strcmp(ctrlname, SLIDER_SENS_TRANS_X) == 0) {
+		cfg.sens_trans[0] = value;
 		update_cfg();
-		break;
-
-	case SLIDER_TRANS_Z:
-		cfg.sens_trans[2] = gtk_range_get_value(rng);
+	} else if(strcmp(ctrlname, SLIDER_SENS_TRANS_Y) == 0) {
+		cfg.sens_trans[1] = value;
 		update_cfg();
-		break;
-
-	case SLIDER_ROT_X:
-		cfg.sens_rot[0] = gtk_range_get_value(rng);
+	} else if(strcmp(ctrlname, SLIDER_SENS_TRANS_Z) == 0) {
+		cfg.sens_trans[2] = value;
 		update_cfg();
-		break;
-
-	case SLIDER_ROT_Y:
-		cfg.sens_rot[1] = gtk_range_get_value(rng);
+	} else if(strcmp(ctrlname, SLIDER_SENS_ROT) == 0) {
+		cfg.sens_rot[0] = cfg.sens_rot[1] = cfg.sens_rot[2] = value;
+		gtk_range_set_value(GTK_RANGE(widgets.slider_sens_rot_x), value);
+		gtk_range_set_value(GTK_RANGE(widgets.slider_sens_rot_y), value);
+		gtk_range_set_value(GTK_RANGE(widgets.slider_sens_rot_z), value);
 		update_cfg();
-		break;
-
-	case SLIDER_ROT_Z:
-		cfg.sens_rot[2] = gtk_range_get_value(rng);
+	} else if(strcmp(ctrlname, SLIDER_SENS_ROT_X) == 0) {
+		cfg.sens_rot[0] = value;
 		update_cfg();
-		break;
-
-	case SLIDER_DEADZONE:
+	} else if(strcmp(ctrlname, SLIDER_SENS_ROT_Y) == 0) {
+		cfg.sens_rot[1] = value;
+		update_cfg();
+	} else if(strcmp(ctrlname, SLIDER_SENS_ROT_Z) == 0) {
+		cfg.sens_rot[2] = value;
+		update_cfg();
+	} else if(strcmp(ctrlname, SLIDER_DEADZONE) == 0) {
 		for(i=0; i<6; i++) {
-			cfg.dead_threshold[i] = gtk_range_get_value(rng);
+			cfg.dead_threshold[i] = value;
 		}
+		gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_trans_x), value);
+		gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_trans_y), value);
+		gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_trans_z), value);
+		gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_rot_x), value);
+		gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_rot_y), value);
+		gtk_range_set_value(GTK_RANGE(widgets.slider_deadzone_rot_z), value);
 		update_cfg();
-		break;
-
-	default:
-		break;
+	} else if(strcmp(ctrlname, SLIDER_DEADZONE_TRANS_X) == 0) {
+		cfg.dead_threshold[TX] = value;
+		update_cfg();
+	} else if(strcmp(ctrlname, SLIDER_DEADZONE_TRANS_Y) == 0) {
+		cfg.dead_threshold[TY] = value;
+		update_cfg();
+	} else if(strcmp(ctrlname, SLIDER_DEADZONE_TRANS_Z) == 0) {
+		cfg.dead_threshold[TZ] = value;
+		update_cfg();
+	} else if(strcmp(ctrlname, SLIDER_DEADZONE_ROT_X) == 0) {
+		cfg.dead_threshold[RX] = value;
+		update_cfg();
+	} else if(strcmp(ctrlname, SLIDER_DEADZONE_ROT_Y) == 0) {
+		cfg.dead_threshold[RY] = value;
+		update_cfg();
+	} else if(strcmp(ctrlname, SLIDER_DEADZONE_ROT_Z) == 0) {
+		cfg.dead_threshold[RZ] = value;
+		update_cfg();
 	}
+
 }
 
-static void bn_handler(GtkButton *bn, void *data)
+G_MODULE_EXPORT void bn_handler(GtkButton *bn, gpointer data)
 {
 	GtkWidget *dlg;
-	int id = (int)data;
 	int tmp;
+	const gchar* ctrlname = gtk_buildable_get_name(GTK_BUILDABLE(bn));
 
-	switch(id) {
-	case BN_START:
-	case BN_STOP:
-		tmp = id == BN_STOP ? CMD_STOPX : CMD_STARTX;
-		write(pipe_fd, &tmp, 1);
-		break;
-
-	case BN_CHECK:
-		dlg = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "The X11 Magellan (3dxsrv-compatible) API is %s.",
-				query_x11() ? "enabled" : "disabled");
-		gtk_widget_show_all(dlg);
-		g_signal_connect_swapped(dlg, "response", G_CALLBACK(gtk_widget_destroy), dlg);
-		break;
-
-	case BN_PING:
+	if(strcmp(ctrlname, BTN_PING) == 0) {
 		tmp = CMD_PING;
 		write(pipe_fd, &tmp, 1);
 		read(pipe_fd, &tmp, 1);
 
 		if(tmp) {	/* daemon alive */
-			dlg = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+			dlg = gtk_message_dialog_new(GTK_WINDOW(widgets.win), GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE, "The spacenavd driver is running fine.");
 			gtk_widget_show_all(dlg);
 			g_signal_connect_swapped(dlg, "response", G_CALLBACK(gtk_widget_destroy), dlg);
 		} else {	/* daemon dead */
-			dlg = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+			dlg = gtk_message_dialog_new(GTK_WINDOW(widgets.win), GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "The driver isn't running at the moment.\n"
 				"You can still modify the configuration through this panel though.");
 			gtk_widget_show_all(dlg);
 			g_signal_connect_swapped(dlg, "response", G_CALLBACK(gtk_widget_destroy), dlg);
 		}
-		break;
-
-	default:
-		break;
 	}
+
 }
 
-static void add_child(GtkWidget *parent, GtkWidget *child)
-{
-	if(GTK_IS_BOX(parent)) {
-		gtk_box_pack_start(GTK_BOX(parent), child, TRUE, TRUE, 3);
-	} else if(GTK_CONTAINER(parent)) {
-		gtk_container_add(GTK_CONTAINER(parent), child);
-	} else {
-		fprintf(stderr, "failed to add child\n");
-	}
-}
-
-static GtkWidget *create_vbox(GtkWidget *parent)
-{
-	GtkWidget *box = gtk_vbox_new(FALSE, 5);
-	add_child(parent, box);
-	return box;
-}
