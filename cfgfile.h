@@ -31,6 +31,7 @@ struct cfg {
 	int map_button[MAX_BUTTONS];
 	int led, grab_device;
 	char serial_dev[PATH_MAX];
+	int repeat_msec;
 };
 
 void default_cfg(struct cfg *cfg);
