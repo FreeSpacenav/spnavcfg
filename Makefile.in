@@ -30,23 +30,23 @@ clean:
 
 .PHONY: install
 install:
-	$(INSTALL) -d $(PREFIX)/bin
-	$(INSTALL) -m 4775 $(bin) $(PREFIX)/bin/$(bin)
-	mkdir -p $(PREFIX)/share/pixmaps
-	cp icons/spnavcfg-*.png $(PREFIX)/share/pixmaps/
+	$(INSTALL) -d $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) -m 4775 $(bin) $(DESTDIR)$(PREFIX)/bin/$(bin)
+	mkdir -p $(DESTDIR)$(PREFIX)/share/pixmaps
+	cp icons/spnavcfg-*.png $(DESTDIR)$(PREFIX)/share/pixmaps/
 	for i in 48 128 256; do \
-		destdir=$(PREFIX)/share/icons/hicolor/$${i}x$${i}/apps; \
+		destdir=$(DESTDIR)$(PREFIX)/share/icons/hicolor/$${i}x$${i}/apps; \
 		mkdir -p $$destdir; \
 		rm -f $$destdir/spnavcfg-$${i}x$${i}.png; \
-		ln -s $(PREFIX)/share/pixmaps/spnavcfg-$${i}x$${i}.png $$destdir/spnavcfg-$${i}x$${i}.png; \
+		ln -s $(DESTDIR)$(PREFIX)/share/pixmaps/spnavcfg-$${i}x$${i}.png $$destdir/spnavcfg-$${i}x$${i}.png; \
 	done
 
 
 .PHONY: uninstall
 uninstall:
-	rm -f $(PREFIX)/bin/$(bin)
-	rm -f $(PREFIX)/share/pixmaps/spnavcfg-*.png
+	rm -f $(DESTDIR)$(PREFIX)/bin/$(bin)
+	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/spnavcfg-*.png
 	for i in 48 128 256; do \
-		destdir=$(PREFIX)/share/icons/hicolor/$${i}x$${i}/apps; \
+		destdir=$(DESTDIR)$(PREFIX)/share/icons/hicolor/$${i}x$${i}/apps; \
 		rm -f $${destdir}/spnavcfg-$${i}x$${i}.png; \
 	done
