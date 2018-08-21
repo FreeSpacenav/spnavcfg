@@ -5,6 +5,8 @@ About
 -----
 Spacenav daemon interactive configuration program.
 
+![shot](http://spacenav.sourceforge.net/images/spnavcfg-shot-thumb.png)
+
 Installation
 ------------
 Requires GTK+ 2 and Xlib headers to be installed.
