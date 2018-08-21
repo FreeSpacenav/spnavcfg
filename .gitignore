@@ -1,0 +1,6 @@
+*.o
+*.d
+*.swp
+Makefile
+ui.h
+spnavcfg
