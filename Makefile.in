@@ -38,7 +38,7 @@ install:
 		destdir=$(DESTDIR)$(PREFIX)/share/icons/hicolor/$${i}x$${i}/apps; \
 		mkdir -p $$destdir; \
 		rm -f $$destdir/spnavcfg-$${i}x$${i}.png; \
-		ln -s $(DESTDIR)$(PREFIX)/share/pixmaps/spnavcfg-$${i}x$${i}.png $$destdir/spnavcfg-$${i}x$${i}.png; \
+		ln -s ../../../../pixmaps/spnavcfg-$${i}x$${i}.png $$destdir/spnavcfg-$${i}x$${i}.png; \
 	done
 
 
