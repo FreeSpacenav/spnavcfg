@@ -40,6 +40,8 @@ install:
 		rm -f $$destdir/spnavcfg-$${i}x$${i}.png; \
 		ln -s $(DESTDIR)$(PREFIX)/share/pixmaps/spnavcfg-$${i}x$${i}.png $$destdir/spnavcfg-$${i}x$${i}.png; \
 	done
+	mkdir -p $(DESTDIR)$(PREFIX)/share/applications
+	cp -a icons/spnavcfg.desktop $(DESTDIR)$(PREFIX)/share/applications/
 
 
 .PHONY: uninstall
@@ -50,3 +52,4 @@ uninstall:
 		destdir=$(DESTDIR)$(PREFIX)/share/icons/hicolor/$${i}x$${i}/apps; \
 		rm -f $${destdir}/spnavcfg-$${i}x$${i}.png; \
 	done
+	rm -f $(DESTDIR)$(PREFIX)/share/applications/spnavcfg.desktop
