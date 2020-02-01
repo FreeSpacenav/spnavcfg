@@ -58,6 +58,13 @@ if [ "$OPT" = 'yes' ]; then
 	echo 'opt = -O3' >>Makefile
 fi
 
+if [ -n "$CFLAGS" ]; then
+	echo "add_cflags = $CFLAGS" >>Makefile
+fi
+if [ -n "$LDFLAGS" ]; then
+	echo "add_ldflags = $LDFLAGS" >>Makefile
+fi
+
 cat "$srcdir/Makefile.in" >>Makefile
 
 echo ''

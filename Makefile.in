@@ -7,8 +7,9 @@ warn = -Wall
 CC = gcc
 SED = sed
 INSTALL = install
-CFLAGS = -pedantic $(warn) $(dbg) $(opt) `pkg-config --cflags gtk+-2.0 gmodule-export-2.0`
-LDFLAGS = `pkg-config --libs gtk+-2.0 gmodule-export-2.0` -lX11
+CFLAGS = -pedantic $(warn) $(dbg) $(opt) `pkg-config --cflags gtk+-2.0 gmodule-export-2.0` \
+		 $(add_cflags)
+LDFLAGS = `pkg-config --libs gtk+-2.0 gmodule-export-2.0` -lX11 $(add_ldflags)
 
 $(bin): $(obj)
 	$(CC) -o $@ $(obj) $(LDFLAGS)
