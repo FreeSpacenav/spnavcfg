@@ -250,7 +250,7 @@ int read_cfg(const char *fname, struct cfg *cfg)
 			}
 
 		} else if(strcmp(key_str, "serial") == 0) {
-			strncpy(cfg->serial_dev, val_str, PATH_MAX);
+			strncpy(cfg->serial_dev, val_str, PATH_MAX - 1);
 
 		} else {
 			fprintf(stderr, "unrecognized config option: %s\n", key_str);

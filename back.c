@@ -102,13 +102,12 @@ int get_daemon_pid(void)
 		fprintf(stderr, "no spacenav pid file, can't find daemon\n");
 		return -1;
 	}
-	fgets(buf, sizeof buf, fp);
-	fclose(fp);
-
-	if(!isdigit(buf[0])) {
-		fprintf(stderr, "fucked up pidfile, can't find daemon\n");
+	if(!fgets(buf, sizeof buf, fp) || !isdigit(buf[0])) {
+		fprintf(stderr, "corrupted pidfile, can't find the daemon\n");
+		fclose(fp);
 		return -1;
 	}
+	fclose(fp);
 	return atoi(buf);
 }
 
