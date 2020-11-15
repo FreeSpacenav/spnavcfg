@@ -1,6 +1,6 @@
 /*
-spacenavd - a free software replacement driver for 6dof space-mice.
-Copyright (C) 2007-2010 John Tsiombikas <nuclear@member.fsf.org>
+spnavcfg - an interactive GUI configurator for the spacenavd daemon.
+Copyright (C) 2007-2019 John Tsiombikas <nuclear@member.fsf.org>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -33,6 +33,8 @@ void default_cfg(struct cfg *cfg)
 {
 	int i;
 
+	memset(cfg, 0, sizeof *cfg);
+
 	cfg->sensitivity = 1.0;
 	for(i=0; i<3; i++) {
 		cfg->sens_trans[i] = cfg->sens_rot[i] = 1.0;
@@ -42,7 +44,7 @@ void default_cfg(struct cfg *cfg)
 		cfg->dead_threshold[i] = 2;
 	}
 
-	cfg->led = 1;
+	cfg->led = LED_ON;
 	cfg->grab_device = 1;
 
 	for(i=0; i<6; i++) {
@@ -52,9 +54,16 @@ void default_cfg(struct cfg *cfg)
 
 	for(i=0; i<MAX_BUTTONS; i++) {
 		cfg->map_button[i] = i;
+		cfg->kbmap_str[i] = 0;
+		cfg->kbmap[i] = 0;
 	}
 
 	cfg->repeat_msec = -1;
+
+	for(i=0; i<MAX_CUSTOM; i++) {
+		cfg->devname[i] = 0;
+		cfg->devid[i][0] = cfg->devid[i][1] = -1;
+	}
 }
 
 #define EXPECT(cond) \
@@ -70,22 +79,25 @@ int read_cfg(const char *fname, struct cfg *cfg)
 	FILE *fp;
 	char buf[512];
 	struct flock flk;
+	int num_devid = 0;
+	/*int num_devnames = 0;*/
 
 	default_cfg(cfg);
 
+	printf("reading config file: %s\n", fname);
 	if(!(fp = fopen(fname, "r"))) {
 		fprintf(stderr, "failed to open config file %s: %s. using defaults.\n", fname, strerror(errno));
 		return -1;
 	}
 
-	/* aquire shared read lock */
+	/* acquire shared read lock */
 	flk.l_type = F_RDLCK;
 	flk.l_start = flk.l_len = 0;
 	flk.l_whence = SEEK_SET;
 	while(fcntl(fileno(fp), F_SETLKW, &flk) == -1);
 
 	while(fgets(buf, sizeof buf, fp)) {
-		int isint, isfloat, ival, i;
+		int isint, isfloat, ival, i, bnidx, axisidx;
 		float fval;
 		char *endp, *key_str, *val_str, *line = buf;
 		while(*line == ' ' || *line == '\t') line++;
@@ -94,11 +106,11 @@ int read_cfg(const char *fname, struct cfg *cfg)
 			continue;
 		}
 
-		if(!(key_str = strtok(line, " :=\n\t\r"))) {
+		if(!(key_str = strtok(line, " =\n\t\r"))) {
 			fprintf(stderr, "invalid config line: %s, skipping.\n", line);
 			continue;
 		}
-		if(!(val_str = strtok(0, " :=\n\t\r"))) {
+		if(!(val_str = strtok(0, " =\n\t\r"))) {
 			fprintf(stderr, "missing value for config key: %s\n", key_str);
 			continue;
 		}
@@ -221,14 +233,50 @@ int read_cfg(const char *fname, struct cfg *cfg)
 				cfg->map_axis[i] = swap_yz ? i : def_axmap[i];
 			}
 
+		} else if(sscanf(key_str, "axismap%d", &axisidx) == 1) {
+			EXPECT(isint);
+			if(axisidx < 0 || axisidx >= MAX_AXES) {
+				fprintf(stderr, "invalid option %s, valid input axis numbers 0 - %d\n", key_str, MAX_AXES - 1);
+				continue;
+			}
+			if(ival < 0 || ival >= 6) {
+				fprintf(stderr, "invalid config value for %s, expected a number from 0 to 6\n", key_str);
+				continue;
+			}
+			cfg->map_axis[axisidx] = ival;
+
+		} else if(sscanf(key_str, "bnmap%d", &bnidx) == 1) {
+			EXPECT(isint);
+			if(bnidx < 0 || bnidx >= MAX_BUTTONS || ival < 0 || ival >= MAX_BUTTONS) {
+				fprintf(stderr, "invalid configuration value for %s, expected a number from 0 to %d\n", key_str, MAX_BUTTONS);
+				continue;
+			}
+			if(cfg->map_button[bnidx] != bnidx) {
+				fprintf(stderr, "warning: multiple mappings for button %d\n", bnidx);
+			}
+			cfg->map_button[bnidx] = ival;
+
+		} else if(sscanf(key_str, "kbmap%d", &bnidx) == 1) {
+			if(bnidx < 0 || bnidx >= MAX_BUTTONS) {
+				fprintf(stderr, "invalid configuration value for %s, expected a number from 0 to %d\n", key_str, MAX_BUTTONS);
+				continue;
+			}
+			if(cfg->kbmap_str[bnidx]) {
+				fprintf(stderr, "warning: multiple keyboard mappings for button %d: %s -> %s\n", bnidx, cfg->kbmap_str[bnidx], val_str);
+				free(cfg->kbmap_str[bnidx]);
+			}
+			cfg->kbmap_str[bnidx] = strdup(val_str);
+
 		} else if(strcmp(key_str, "led") == 0) {
 			if(isint) {
 				cfg->led = ival;
 			} else {
-				if(strcmp(val_str, "true") == 0 || strcmp(val_str, "on") == 0 || strcmp(val_str, "yes") == 0) {
-					cfg->led = 1;
+				if(strcmp(val_str, "auto") == 0) {
+					cfg->led = LED_AUTO;
+				} else if(strcmp(val_str, "true") == 0 || strcmp(val_str, "on") == 0 || strcmp(val_str, "yes") == 0) {
+					cfg->led = LED_ON;
 				} else if(strcmp(val_str, "false") == 0 || strcmp(val_str, "off") == 0 || strcmp(val_str, "no") == 0) {
-					cfg->led = 0;
+					cfg->led = LED_OFF;
 				} else {
 					fprintf(stderr, "invalid configuration value for %s, expected a boolean value.\n", key_str);
 					continue;
@@ -252,6 +300,17 @@ int read_cfg(const char *fname, struct cfg *cfg)
 		} else if(strcmp(key_str, "serial") == 0) {
 			strncpy(cfg->serial_dev, val_str, PATH_MAX - 1);
 
+		} else if(strcmp(key_str, "device-id") == 0) {
+			unsigned int vendor, prod;
+			if(sscanf(val_str, "%x:%x", &vendor, &prod) == 2) {
+				cfg->devid[num_devid][0] = (int)vendor;
+				cfg->devid[num_devid][1] = (int)prod;
+				num_devid++;
+			} else {
+				fprintf(stderr, "invalid configuration value for %s, expected a vendorid:productid pair\n", key_str);
+				continue;
+			}
+
 		} else {
 			fprintf(stderr, "unrecognized config option: %s\n", key_str);
 		}
@@ -269,6 +328,7 @@ int read_cfg(const char *fname, struct cfg *cfg)
 
 int write_cfg(const char *fname, struct cfg *cfg)
 {
+	int i, wrote_comment;
 	FILE *fp;
 	struct flock flk;
 
@@ -277,7 +337,7 @@ int write_cfg(const char *fname, struct cfg *cfg)
 		return -1;
 	}
 
-	/* aquire exclusive write lock */
+	/* acquire exclusive write lock */
 	flk.l_type = F_WRLCK;
 	flk.l_start = flk.l_len = 0;
 	flk.l_whence = SEEK_SET;
@@ -343,10 +403,36 @@ int write_cfg(const char *fname, struct cfg *cfg)
 	fprintf(fp, "# swap translation along Y and Z axes\n");
 	fprintf(fp, "swap-yz = %s\n\n", cfg->map_axis[1] == def_axmap[1] ? "false" : "true");
 
-	if(!cfg->led) {
-		fprintf(fp, "# disable led\n");
-		fprintf(fp, "led = 0\n\n");
+	wrote_comment = 0;
+	for(i=0; i<MAX_BUTTONS; i++) {
+		if(cfg->map_button[i] != i) {
+			if(!wrote_comment) {
+				fprintf(fp, "# button mappings\n");
+				wrote_comment = 1;
+			}
+			fprintf(fp, "bnmap%d = %d\n", i, cfg->map_button[i]);
+		}
 	}
+	if(wrote_comment) {
+		fputc('\n', fp);
+	}
+
+	wrote_comment = 0;
+	for(i=0; i<MAX_BUTTONS; i++) {
+		if(cfg->kbmap_str[i]) {
+			if(!wrote_comment) {
+				fprintf(fp, "# button to key mappings\n");
+				wrote_comment = 1;
+			}
+			fprintf(fp, "kbmap%d = %s\n", i, cfg->kbmap_str[i]);
+		}
+	}
+	if(wrote_comment) {
+		fputc('\n', fp);
+	}
+
+	fprintf(fp, "# led status: on, off, or auto (turn on when a client is connected)\n");
+	fprintf(fp, "led = %s\n\n", (cfg->led ? (cfg->led == LED_AUTO ? "auto" : "on") : "off"));
 
 	if(!cfg->grab_device) {
 		fprintf(fp, "# Don't grab USB device\n");
@@ -365,8 +451,16 @@ int write_cfg(const char *fname, struct cfg *cfg)
 	if(cfg->serial_dev[0]) {
 		fprintf(fp, "serial = %s\n\n", cfg->serial_dev);
 	} else {
-		fprintf(fp, "#serial = /dev/ttyS0\n");
+		fprintf(fp, "#serial = /dev/ttyS0\n\n");
 	}
+
+	fprintf(fp, "List of additional USB devices to use (multiple devices can be listed)");
+	for(i=0; i<MAX_CUSTOM; i++) {
+		if(cfg->devid[i][0] != -1 && cfg->devid[i][1] != -1) {
+			fprintf(fp, "device-id = %x:%x\n", cfg->devid[i][0], cfg->devid[i][1]);
+		}
+	}
+	fprintf(fp, "\n");
 
 	/* unlock */
 	flk.l_type = F_UNLCK;
