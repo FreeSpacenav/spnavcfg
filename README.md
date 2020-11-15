@@ -24,7 +24,7 @@ secure.
 
 License
 -------
-Copyright (C) 2007-2018 John Tsiombikas <nuclear@member.fsf.org>
+Copyright (C) 2007-2020 John Tsiombikas <nuclear@member.fsf.org>
 
 This program is free software. Feel free to use, modify, and/or redistribute
 it under the terms of the GNU General Public License version 3, or (at your
