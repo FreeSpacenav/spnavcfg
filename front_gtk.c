@@ -26,7 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <X11/Xutil.h>
 #include "cfgfile.h"
 #include "cmd.h"
-#include "ui.h"
 
 #define CFGFILE		"/etc/spnavrc"
 
@@ -188,7 +187,7 @@ static void create_ui(void)
 	GtkBuilder *gtk_builder;
 
 	gtk_builder = gtk_builder_new();
-	gtk_builder_add_from_string(gtk_builder, (gchar*)ui_xml, -1, NULL);
+	gtk_builder_add_from_file(gtk_builder, PKGDATADIR "/main.ui", NULL);
 
 	widgets.win = GTK_WIDGET(gtk_builder_get_object(gtk_builder, "main"));
 
