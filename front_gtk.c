@@ -42,6 +42,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define CHK_ENABLE_LED				"enable_led"
 #define CHK_GRAB_DEVICE				"grab_device"
+#define CHK_DISABLE_ROTATION			"disable_rotation"
+#define CHK_DISABLE_TRANSLATION			"disable_translation"
 
 #define SLIDER_SENS_GLOBAL			"sens_global"
 
@@ -182,9 +184,15 @@ static int query_x11(void)
 	return 1;	/* ... but wtf */
 }
 
+void checkbox_toggle(GtkWidget *widget, gpointer data) {
+
+	if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data), FALSE);
+}
+
 static void create_ui(void)
 {
-	GObject *obj;
+	GObject *obj, *disable_rotation;
 	GtkBuilder *gtk_builder;
 
 	gtk_builder = gtk_builder_new();
@@ -252,6 +260,12 @@ static void create_ui(void)
 
 	obj = gtk_builder_get_object (gtk_builder, CHK_ENABLE_LED);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.led);
+	disable_rotation = gtk_builder_get_object (gtk_builder, CHK_DISABLE_ROTATION);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(disable_rotation), cfg.disable_rotation);
+	obj = gtk_builder_get_object (gtk_builder, CHK_DISABLE_TRANSLATION);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(obj), cfg.disable_translation);
+	g_signal_connect(G_OBJECT(disable_rotation), "toggled", G_CALLBACK(checkbox_toggle), obj);
+	g_signal_connect(G_OBJECT(obj), "toggled", G_CALLBACK(checkbox_toggle), disable_rotation);
 
 	gtk_builder_connect_signals (gtk_builder, NULL);
 
@@ -288,6 +302,12 @@ G_MODULE_EXPORT void chk_handler(GtkToggleButton *bn, gpointer data)
 		update_cfg();
 	} else if(strcmp(ctrlname, CHK_ENABLE_LED) == 0) {
 		cfg.led = state;
+		update_cfg();
+	} else if(strcmp(ctrlname, CHK_DISABLE_ROTATION) == 0) {
+		cfg.disable_rotation = state;
+		update_cfg();
+	} else if(strcmp(ctrlname, CHK_DISABLE_TRANSLATION) == 0) {
+		cfg.disable_translation = state;
 		update_cfg();
 	} else if(strcmp(ctrlname, CHK_SWAP_YZ) == 0) {
 		tmp = cfg.map_axis[TY];

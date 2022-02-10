@@ -31,12 +31,27 @@ enum {
 	LED_AUTO	= 2
 };
 
+/* button actions */
+enum {
+	BNACT_NONE,
+	BNACT_SENS_RESET,
+	BNACT_SENS_INC,
+	BNACT_SENS_DEC,
+	BNACT_DISABLE_ROTATION,
+	BNACT_DISABLE_TRANSLATION,
+
+	MAX_BNACT
+};
+
 struct cfg {
 	float sensitivity, sens_trans[3], sens_rot[3];
+	int disable_rotation;
+	int disable_translation;
 	int dead_threshold[MAX_AXES];
 	int invert[MAX_AXES];
 	int map_axis[MAX_AXES];
 	int map_button[MAX_BUTTONS];
+	int bnact[MAX_BUTTONS];
 	int kbmap[MAX_BUTTONS];
 	char *kbmap_str[MAX_BUTTONS];
 	int led, grab_device;

@@ -24,6 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fcntl.h>
 #include "cfgfile.h"
 
+static int parse_bnact(const char *s);
+static const char* str_bnact(const int idx);
+
 enum {TX, TY, TZ, RX, RY, RZ};
 
 static const int def_axmap[] = {0, 2, 1, 3, 5, 4};
@@ -64,6 +67,8 @@ void default_cfg(struct cfg *cfg)
 		cfg->devname[i] = 0;
 		cfg->devid[i][0] = cfg->devid[i][1] = -1;
 	}
+	cfg->disable_translation = 0;
+	cfg->disable_rotation = 0;
 }
 
 #define EXPECT(cond) \
@@ -191,6 +196,14 @@ int read_cfg(const char *fname, struct cfg *cfg)
 			EXPECT(isfloat);
 			cfg->sens_rot[2] = fval;
 
+		} else if(strcmp(key_str, "disable-rotation") == 0) {
+			EXPECT(isint);
+			cfg->disable_rotation = ival;
+
+		} else if(strcmp(key_str, "disable-translation") == 0) {
+			EXPECT(isint);
+			cfg->disable_translation = ival;
+
 		} else if(strcmp(key_str, "invert-rot") == 0) {
 			if(strchr(val_str, 'x')) {
 				cfg->invert[RX] = !def_axinv[RX];
@@ -255,6 +268,17 @@ int read_cfg(const char *fname, struct cfg *cfg)
 				fprintf(stderr, "warning: multiple mappings for button %d\n", bnidx);
 			}
 			cfg->map_button[bnidx] = ival;
+
+		} else if(sscanf(key_str, "bnact%d", &bnidx) == 1) {
+			if(bnidx < 0 || bnidx >= MAX_BUTTONS) {
+				fprintf(stderr, "invalid configuration value for %s, expected a number from 0 to %d\n", key_str, MAX_BUTTONS);
+				continue;
+			}
+			if((cfg->bnact[bnidx] = parse_bnact(val_str)) == -1) {
+				cfg->bnact[bnidx] = BNACT_NONE;
+				fprintf(stderr, "invalid button action: \"%s\"\n", val_str);
+				continue;
+			}
 
 		} else if(sscanf(key_str, "kbmap%d", &bnidx) == 1) {
 			if(bnidx < 0 || bnidx >= MAX_BUTTONS) {
@@ -331,6 +355,7 @@ int write_cfg(const char *fname, struct cfg *cfg)
 	int i, wrote_comment;
 	FILE *fp;
 	struct flock flk;
+	char * btn_act_name;
 
 	if(!(fp = fopen(fname, "w"))) {
 		fprintf(stderr, "failed to write config file %s: %s\n", fname, strerror(errno));
@@ -363,6 +388,10 @@ int write_cfg(const char *fname, struct cfg *cfg)
 		fprintf(fp, "sensitivity-rotation-y = %.3f\n", cfg->sens_rot[1]);
 		fprintf(fp, "sensitivity-rotation-z = %.3f\n", cfg->sens_rot[2]);
 	}
+	fputc('\n', fp);
+
+	fprintf(fp, "disable-rotation = %d\n", cfg->disable_rotation);
+	fprintf(fp, "disable-translation = %d\n", cfg->disable_translation);
 	fputc('\n', fp);
 
 	fprintf(fp, "# dead zone; any motion less than this number, is discarded as noise.\n");
@@ -431,6 +460,23 @@ int write_cfg(const char *fname, struct cfg *cfg)
 		fputc('\n', fp);
 	}
 
+	wrote_comment = 0;
+	for(i=0; i<MAX_BUTTONS; i++) {
+		if(cfg->bnact[i]) {
+			btn_act_name = str_bnact(cfg->bnact[i]);
+			if(btn_act_name) {
+				if(!wrote_comment) {
+					fprintf(fp, "# bnactN = <action>\n");
+					wrote_comment = 1;
+				}
+				fprintf(fp, "bnact%d = %s\n", i, btn_act_name);
+			}
+		}
+	}
+	if(wrote_comment) {
+		fputc('\n', fp);
+	}
+
 	fprintf(fp, "# led status: on, off, or auto (turn on when a client is connected)\n");
 	fprintf(fp, "led = %s\n\n", (cfg->led ? (cfg->led == LED_AUTO ? "auto" : "on") : "off"));
 
@@ -454,7 +500,7 @@ int write_cfg(const char *fname, struct cfg *cfg)
 		fprintf(fp, "#serial = /dev/ttyS0\n\n");
 	}
 
-	fprintf(fp, "List of additional USB devices to use (multiple devices can be listed)");
+	fprintf(fp, "#List of additional USB devices to use (multiple devices can be listed)");
 	for(i=0; i<MAX_CUSTOM; i++) {
 		if(cfg->devid[i][0] != -1 && cfg->devid[i][1] != -1) {
 			fprintf(fp, "device-id = %x:%x\n", cfg->devid[i][0], cfg->devid[i][1]);
@@ -470,4 +516,39 @@ int write_cfg(const char *fname, struct cfg *cfg)
 
 	fclose(fp);
 	return 0;
+}
+
+static struct {
+	const char *name;
+	int act;
+} bnact_strtab[] = {
+	{"none", BNACT_NONE},
+	{"sensitivity-up", BNACT_SENS_INC},
+	{"sensitivity-down", BNACT_SENS_DEC},
+	{"sensitivity-reset", BNACT_SENS_RESET},
+	{"disable-rotation", BNACT_DISABLE_ROTATION},
+	{"disable-translation", BNACT_DISABLE_TRANSLATION},
+	{0, 0}
+};
+
+static int parse_bnact(const char *s)
+{
+	int i;
+	for(i=0; bnact_strtab[i].name; i++) {
+		if(strcmp(bnact_strtab[i].name, s) == 0) {
+			return bnact_strtab[i].act;
+		}
+	}
+	return -1;
+}
+
+static const char* str_bnact(const int idx)
+{
+	int i;
+	for(i=0; i < MAX_BNACT; i++) {
+		if(bnact_strtab[i].act == idx) {
+			return bnact_strtab[i].name;
+		}
+	}
+	return NULL;
 }
