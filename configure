@@ -7,8 +7,6 @@ OPT=yes
 DBG=yes
 X11=yes
 
-srcdir="`dirname "$0"`"
-
 for arg; do
 	case "$arg" in
 	--prefix=*)
@@ -48,7 +46,6 @@ echo
 # create Makefile
 echo 'creating Makefile ...'
 echo "PREFIX = $PREFIX" >Makefile
-echo "srcdir = $srcdir" >>Makefile
 
 if [ "$DBG" = 'yes' ]; then
 	echo 'dbg = -g' >>Makefile
@@ -65,7 +62,7 @@ if [ -n "$LDFLAGS" ]; then
 	echo "add_ldflags = $LDFLAGS" >>Makefile
 fi
 
-cat "$srcdir/Makefile.in" >>Makefile
+cat "Makefile.in" >>Makefile
 
 echo ''
 echo 'Done. You can now type make (or gmake) to compile spnavcfg.'

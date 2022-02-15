@@ -1,14 +1,14 @@
-obj = spnavcfg.o front_gtk.o back.o cfgfile.o
-dep = $(obj:.o=.d)
+src = $(wildcard src/*.c)
+obj = $(src:.c=.o)
+dep = $(src:.c=.d)
 bin = spnavcfg
 
-warn = -Wall
+warn = -pedantic -Wall
 
-CC = gcc
+CC ?= gcc
 SED = sed
-INSTALL = install
-CFLAGS = -pedantic $(warn) $(dbg) $(opt) `pkg-config --cflags gtk+-2.0 gmodule-export-2.0` \
-		 $(add_cflags)
+CFLAGS = $(warn) $(dbg) $(opt) `pkg-config --cflags gtk+-2.0 gmodule-export-2.0` \
+		 $(add_cflags) -MMD
 LDFLAGS = `pkg-config --libs gtk+-2.0 gmodule-export-2.0` -lX11 $(add_ldflags)
 
 $(bin): $(obj)
@@ -16,23 +16,26 @@ $(bin): $(obj)
 
 -include $(dep)
 
-%.o: $(srcdir)/%.c | $(srcdir)/ui.h
+src/main.o: src/main.c src/ui.h
 	$(CC) $(CFLAGS) -c $< -o $@
-	$(CPP) $(CFLAGS) $< -MM -MT $@ >$(@:.o=.d)
 
-$(srcdir)/ui.h: $(srcdir)/ui/ui.xml
+src/ui.h: ui/ui.xml
 	echo 'static const char *ui_xml =' >$@
 	$(SED) 's/"/\\"/g; s/^.*$$/	"&\\n"/' $< >>$@
 	echo ';' >>$@
 
 .PHONY: clean
 clean:
-	rm -f $(obj) $(bin) $(srcdir)/ui.h
+	rm -f $(obj) $(bin) src/ui.h
+
+.PHONY: cleandep
+cleandep:
+	rm -f $(dep)
 
 .PHONY: install
 install:
-	$(INSTALL) -d $(DESTDIR)$(PREFIX)/bin
-	$(INSTALL) -m 4775 $(bin) $(DESTDIR)$(PREFIX)/bin/$(bin)
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp $(bin) $(DESTDIR)$(PREFIX)/bin/$(bin)
 	for i in 48 128 256; do \
 		destdir=$(DESTDIR)$(PREFIX)/share/icons/hicolor/$${i}x$${i}/apps; \
 		mkdir -p $$destdir; \
