@@ -7,24 +7,35 @@ Spacenav daemon interactive configuration program.
 
 ![shot](http://spacenav.sourceforge.net/images/spnavcfg-shot-thumb.png)
 
+
+Compatibility
+-------------
+The current version of spnavcfg works with spacenavd v0.9 or higher (requires a
+spacenavd which speaks the spnav protocol v1).
+
+This break in compatibility is necessary because the new protocol allows
+spnavcfg to act as a regular libspnav client and send configuration commands
+through the spacenavd socket, instead of having to modify `/etc/spnavrc` and
+send `SIGHUP` to the daemon, as was the old mode of operation.
+
+This is a huge security improvement, as it makes it no longer necessary to
+install spnavcfg as setuid-root, and frankly much less clunky and error-prone.
+Plus it opens the way for a new and improved GUI with much more functionality
+and user feedback.
+
+Therefore, you are advised to update your spacenavd to the latest version if at
+all possible. If you can't update spacenavd, the last version of spnavcfg
+which will work with older versions of the daemon is 0.3.1.
+
 Installation
 ------------
-Requires GTK+ 2 and Xlib headers to be installed.
-./configure, make, make install, as usual (make install part as root).
-
-Security
---------
-The binary is installed setuid root in order to be able to modify /etc/spnavrc
-and send signals to the daemon. However, it was designed from start to be as
-secure as possible. spnavcfg launches two processes (see front.c and back.c).
-The frontend that runs all the GUI code drops priviledges to the original uid,
-while the backend that does all the gruntwork keeps effective uid root.
-As long as you don't run the program while logged in as root, it should be very
-secure.
+Requires libspnav, GTK+ 2, and Xlib headers to be installed.
+`./configure`, `make`, `make install`, as usual (the `make install` part as root
+if you're installing system-wide). See `./configure --help` for build options.
 
 License
 -------
-Copyright (C) 2007-2020 John Tsiombikas <nuclear@member.fsf.org>
+Copyright (C) 2007-2022 John Tsiombikas <nuclear@member.fsf.org>
 
 This program is free software. Feel free to use, modify, and/or redistribute
 it under the terms of the GNU General Public License version 3, or (at your
