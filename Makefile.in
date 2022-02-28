@@ -9,7 +9,7 @@ CC ?= gcc
 SED = sed
 CFLAGS = $(warn) $(dbg) $(opt) `pkg-config --cflags gtk+-2.0 gmodule-export-2.0` \
 		 $(add_cflags) -MMD
-LDFLAGS = `pkg-config --libs gtk+-2.0 gmodule-export-2.0` -lX11 $(add_ldflags)
+LDFLAGS = `pkg-config --libs gtk+-2.0 gmodule-export-2.0` -lX11 -lspnav $(add_ldflags)
 
 $(bin): $(obj)
 	$(CC) -o $@ $(obj) $(LDFLAGS)
