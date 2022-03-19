@@ -1,32 +1,38 @@
-src = $(wildcard src/*.c)
-obj = $(src:.c=.o)
-dep = $(src:.c=.d)
+ccsrc = $(wildcard src/*.cc)
+mochdr = src/ui.h
+mocsrc = $(mochdr:.h=.moc.cc)
+obj = $(ccsrc:.cc=.o) $(mocsrc:.cc=.o)
+dep = $(ccsrc:.cc=.d)
 bin = spnavcfg
 
-warn = -pedantic -Wall
-
 CC ?= gcc
-SED = sed
-CFLAGS = $(warn) $(dbg) $(opt) `pkg-config --cflags gtk+-2.0 gmodule-export-2.0` \
+CXX ?= g++
+UIC ?= uic
+MOC ?= moc
+
+warn = -pedantic -Wall
+incdir = -I.
+
+CXXFLAGS = $(warn) $(dbg) $(opt) $(incdir) -fPIC `pkg-config --cflags Qt5Core Qt5Gui Qt5Widgets` \
 		 $(add_cflags) -MMD
-LDFLAGS = `pkg-config --libs gtk+-2.0 gmodule-export-2.0` -lX11 -lspnav $(add_ldflags)
+LDFLAGS = `pkg-config --libs Qt5Core Qt5Gui Qt5Widgets` -lspnav $(add_ldflags)
 
 $(bin): $(obj)
-	$(CC) -o $@ $(obj) $(LDFLAGS)
+	$(CXX) -o $@ $(obj) $(LDFLAGS)
 
 -include $(dep)
 
-src/main.o: src/main.c src/ui.h
-	$(CC) $(CFLAGS) -c $< -o $@
+src/main.o: src/main.cc ui_mainwin.h
 
-src/ui.h: ui/ui.xml
-	echo 'static const char *ui_xml =' >$@
-	$(SED) 's/"/\\"/g; s/^.*$$/	"&\\n"/' $< >>$@
-	echo ';' >>$@
+ui_mainwin.h: ui/spnavcfg.ui
+	$(UIC) -o $@ $<
+
+%.moc.cc: %.h
+	$(MOC) -o $@ $(incdir) $<
 
 .PHONY: clean
 clean:
-	rm -f $(obj) $(bin) src/ui.h
+	rm -f $(obj) $(bin) $(mocsrc) win_main_ui.h
 
 .PHONY: cleandep
 cleandep:

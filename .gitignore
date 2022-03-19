@@ -2,5 +2,5 @@
 *.d
 *.swp
 Makefile
-ui.h
 spnavcfg
+ui_mainwin.h
