@@ -5,7 +5,7 @@ About
 -----
 Spacenav daemon interactive configuration program.
 
-![shot](http://spacenav.sourceforge.net/images/spnavcfg-shot-thumb.png)
+![shot](http://spacenav.sourceforge.net/images/spnavcfg1-shot-thumb.png)
 
 
 Compatibility
@@ -29,9 +29,15 @@ which will work with older versions of the daemon is 0.3.1.
 
 Installation
 ------------
-Requires libspnav, GTK+ 2, and Xlib headers to be installed.
-`./configure`, `make`, `make install`, as usual (the `make install` part as root
-if you're installing system-wide). See `./configure --help` for build options.
+First make sure you have the dependencies installed:
+  - libspnav v0.4 or higher
+  - Qt 5 (core, gui, and widgets).
+
+To build just run `./configure`, `make`, and `make install` as usual.
+The `make install` part will probably need to be executed as root, if you're
+installing system-wide.
+
+For build options, see `./configure --help`.
 
 License
 -------

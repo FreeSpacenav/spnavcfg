@@ -4,3 +4,4 @@
 Makefile
 spnavcfg
 ui_mainwin.h
+res.cc

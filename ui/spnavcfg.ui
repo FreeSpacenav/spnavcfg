@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>816</width>
-    <height>650</height>
+    <width>800</width>
+    <height>667</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -159,12 +159,12 @@
            <widget class="QComboBox" name="combo_led">
             <item>
              <property name="text">
-              <string>On</string>
+              <string>Off</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Off</string>
+              <string>On</string>
              </property>
             </item>
             <item>
@@ -295,7 +295,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget_2">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_axes" native="true">
       <attribute name="title">
@@ -328,9 +328,22 @@
           </widget>
          </item>
          <item>
+          <widget class="QDoubleSpinBox" name="spin_sens">
+           <property name="maximum">
+            <double>10.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Preferred</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
@@ -350,6 +363,42 @@
            </property>
           </widget>
          </item>
+         <item>
+          <spacer name="horizontalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Preferred</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="chk_dead_global">
+           <property name="text">
+            <string>Global deadzone</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spin_dead">
+           <property name="toolTip">
+            <string>Deadzone for all axes</string>
+           </property>
+           <property name="maximum">
+            <number>255</number>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -358,10 +407,72 @@
           <string>Translation</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_9">
+          <item row="3" column="1" rowspan="2">
+           <widget class="QProgressBar" name="prog_ty">
+            <property name="minimum">
+             <number>-128</number>
+            </property>
+            <property name="maximum">
+             <number>127</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="format">
+             <string>%v</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="5" rowspan="2">
+           <widget class="QComboBox" name="combo_axismap_ty">
+            <property name="toolTip">
+             <string>Select which device axis affects Y translation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="5">
+           <widget class="QComboBox" name="combo_axismap_tx">
+            <property name="toolTip">
+             <string>Select which device axis affects X translation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QProgressBar" name="prog_tz">
+            <property name="minimum">
+             <number>-128</number>
+            </property>
+            <property name="maximum">
+             <number>127</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="format">
+             <string>%v</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2" rowspan="2">
+           <widget class="QCheckBox" name="chk_inv_ty">
+            <property name="toolTip">
+             <string>invert Y axis translation</string>
+            </property>
             <property name="text">
-             <string>invert</string>
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="5">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>device axis</string>
             </property>
            </widget>
           </item>
@@ -372,10 +483,43 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="4">
-           <widget class="QLabel" name="label_11">
+          <item row="1" column="6">
+           <widget class="QSpinBox" name="spin_dead_tx">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximum">
+             <number>255</number>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QCheckBox" name="chk_inv_tz">
+            <property name="toolTip">
+             <string>invert Z axis translation</string>
+            </property>
             <property name="text">
-             <string>device axis</string>
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="5" rowspan="2">
+           <widget class="QComboBox" name="combo_axismap_tz">
+            <property name="toolTip">
+             <string>Select which device axis affects Z translation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="3">
+           <widget class="QSlider" name="slider_sens_tz">
+            <property name="toolTip">
+             <string>Z axis translation sensitivity</string>
+            </property>
+            <property name="maximum">
+             <number>60</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
@@ -389,16 +533,13 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="1" rowspan="2">
-           <widget class="QProgressBar" name="prog_tx">
-            <property name="minimum">
-             <number>-100</number>
-            </property>
-            <property name="value">
-             <number>24</number>
-            </property>
-            <property name="invertedAppearance">
+          <item row="5" column="6">
+           <widget class="QSpinBox" name="spin_dead_tz">
+            <property name="enabled">
              <bool>false</bool>
+            </property>
+            <property name="maximum">
+             <number>255</number>
             </property>
            </widget>
           </item>
@@ -406,66 +547,6 @@
            <widget class="QCheckBox" name="chk_inv_tx">
             <property name="toolTip">
              <string>invert X axis translation</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QSlider" name="slider_sens_tx">
-            <property name="toolTip">
-             <string>X axis translation sensitivity</string>
-            </property>
-            <property name="maximum">
-             <number>60</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="4">
-           <widget class="QComboBox" name="comvo_axismap_tx">
-            <property name="toolTip">
-             <string>Select which device axis affects X translation</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="4" rowspan="2">
-           <widget class="QComboBox" name="comvo_axismap_ty">
-            <property name="toolTip">
-             <string>Select which device axis affects Y translation</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_7">
-            <property name="text">
-             <string>TY</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1" rowspan="2">
-           <widget class="QProgressBar" name="prog_ty">
-            <property name="minimum">
-             <number>-100</number>
-            </property>
-            <property name="value">
-             <number>24</number>
-            </property>
-            <property name="invertedAppearance">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="2" rowspan="2">
-           <widget class="QCheckBox" name="chk_inv_ty">
-            <property name="toolTip">
-             <string>invert Y axis translation</string>
             </property>
             <property name="text">
              <string/>
@@ -485,10 +566,62 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="4" rowspan="2">
-           <widget class="QComboBox" name="comvo_axismap_tz">
+          <item row="1" column="1" rowspan="2">
+           <widget class="QProgressBar" name="prog_tx">
+            <property name="minimum">
+             <number>-128</number>
+            </property>
+            <property name="maximum">
+             <number>127</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="format">
+             <string>%v</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="6">
+           <widget class="QSpinBox" name="spin_dead_ty">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximum">
+             <number>255</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QSlider" name="slider_sens_tx">
             <property name="toolTip">
-             <string>Select which device axis affects Z translation</string>
+             <string>X axis translation sensitivity</string>
+            </property>
+            <property name="maximum">
+             <number>60</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="6">
+           <widget class="QLabel" name="label_20">
+            <property name="text">
+             <string>deadzone</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>TY</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -502,41 +635,21 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
-           <widget class="QProgressBar" name="prog_tz">
-            <property name="minimum">
-             <number>-100</number>
-            </property>
-            <property name="value">
-             <number>24</number>
-            </property>
-            <property name="invertedAppearance">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="2">
-           <widget class="QCheckBox" name="chk_inv_tz">
-            <property name="toolTip">
-             <string>invert Z axis translation</string>
-            </property>
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_9">
             <property name="text">
-             <string/>
+             <string>invert</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="3">
-           <widget class="QSlider" name="slider_sens_tz">
-            <property name="toolTip">
-             <string>Z axis translation sensitivity</string>
-            </property>
-            <property name="maximum">
-             <number>60</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
+          <item row="1" column="4">
+           <widget class="QDoubleSpinBox" name="spin_sens_tx"/>
+          </item>
+          <item row="3" column="4">
+           <widget class="QDoubleSpinBox" name="spin_sens_ty"/>
+          </item>
+          <item row="5" column="4">
+           <widget class="QDoubleSpinBox" name="spin_sens_tz"/>
           </item>
          </layout>
         </widget>
@@ -547,54 +660,10 @@
           <string>Rotation</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
-          <item row="0" column="2">
-           <widget class="QLabel" name="label_12">
-            <property name="text">
-             <string>invert</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="3">
-           <widget class="QLabel" name="label_13">
-            <property name="text">
-             <string>sensitivity</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4">
-           <widget class="QLabel" name="label_14">
-            <property name="text">
-             <string>device axis</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="label_15">
-            <property name="text">
-             <string>RX</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" rowspan="2">
-           <widget class="QProgressBar" name="prog_rx">
-            <property name="minimum">
-             <number>-100</number>
-            </property>
-            <property name="value">
-             <number>24</number>
-            </property>
-            <property name="invertedAppearance">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="2" rowspan="2">
-           <widget class="QCheckBox" name="chk_inv_rx">
+          <item row="5" column="2">
+           <widget class="QCheckBox" name="chk_inv_rz">
             <property name="toolTip">
-             <string>invert X axis rotation</string>
+             <string>invert Z axis rotation</string>
             </property>
             <property name="text">
              <string/>
@@ -614,50 +683,20 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="4">
-           <widget class="QComboBox" name="comvo_axismap_rx">
+          <item row="1" column="5">
+           <widget class="QComboBox" name="combo_axismap_rx">
             <property name="toolTip">
              <string>Select which device axis affects X rotation</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="4" rowspan="2">
-           <widget class="QComboBox" name="comvo_axismap_ry">
-            <property name="toolTip">
-             <string>Select which device axis affects Y rotation</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="label_16">
-            <property name="text">
-             <string>RY</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1" rowspan="2">
-           <widget class="QProgressBar" name="prog_ry">
-            <property name="minimum">
-             <number>-100</number>
-            </property>
-            <property name="value">
-             <number>24</number>
-            </property>
-            <property name="invertedAppearance">
+          <item row="3" column="6">
+           <widget class="QSpinBox" name="spin_dead_ry">
+            <property name="enabled">
              <bool>false</bool>
             </property>
-           </widget>
-          </item>
-          <item row="3" column="2" rowspan="2">
-           <widget class="QCheckBox" name="chk_inv_ry">
-            <property name="toolTip">
-             <string>invert Y axis rotation</string>
-            </property>
-            <property name="text">
-             <string/>
+            <property name="maximum">
+             <number>255</number>
             </property>
            </widget>
           </item>
@@ -674,43 +713,118 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="4" rowspan="2">
-           <widget class="QComboBox" name="comvo_axismap_rz">
+          <item row="2" column="5" rowspan="2">
+           <widget class="QComboBox" name="combo_axismap_ry">
             <property name="toolTip">
-             <string>Select which device axis affects Z rotation</string>
+             <string>Select which device axis affects Y rotation</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="label_17">
+          <item row="3" column="1" rowspan="2">
+           <widget class="QProgressBar" name="prog_ry">
+            <property name="minimum">
+             <number>-128</number>
+            </property>
+            <property name="maximum">
+             <number>127</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="format">
+             <string>%v</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_16">
             <property name="text">
-             <string>RZ</string>
+             <string>RY</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
-           <widget class="QProgressBar" name="prog_rz">
+          <item row="1" column="1" rowspan="2">
+           <widget class="QProgressBar" name="prog_rx">
             <property name="minimum">
-             <number>-100</number>
+             <number>-128</number>
+            </property>
+            <property name="maximum">
+             <number>127</number>
             </property>
             <property name="value">
-             <number>24</number>
+             <number>0</number>
             </property>
             <property name="invertedAppearance">
              <bool>false</bool>
             </property>
+            <property name="format">
+             <string>%v</string>
+            </property>
            </widget>
           </item>
-          <item row="5" column="2">
-           <widget class="QCheckBox" name="chk_inv_rz">
+          <item row="0" column="2">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>invert</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QProgressBar" name="prog_rz">
+            <property name="minimum">
+             <number>-128</number>
+            </property>
+            <property name="maximum">
+             <number>127</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="invertedAppearance">
+             <bool>false</bool>
+            </property>
+            <property name="format">
+             <string>%v</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="6">
+           <widget class="QSpinBox" name="spin_dead_rz">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximum">
+             <number>255</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2" rowspan="2">
+           <widget class="QCheckBox" name="chk_inv_ry">
             <property name="toolTip">
-             <string>invert Z axis rotation</string>
+             <string>invert Y axis rotation</string>
             </property>
             <property name="text">
              <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>sensitivity</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="5">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>device axis</string>
             </property>
            </widget>
           </item>
@@ -727,6 +841,69 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="2" rowspan="2">
+           <widget class="QCheckBox" name="chk_inv_rx">
+            <property name="toolTip">
+             <string>invert X axis rotation</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_17">
+            <property name="text">
+             <string>RZ</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="6">
+           <widget class="QSpinBox" name="spin_dead_rx">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="maximum">
+             <number>255</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="6">
+           <widget class="QLabel" name="label_21">
+            <property name="text">
+             <string>deadzone</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="5" rowspan="2">
+           <widget class="QComboBox" name="combo_axismap_rz">
+            <property name="toolTip">
+             <string>Select which device axis affects Z rotation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>RX</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QDoubleSpinBox" name="spin_sens_rx"/>
+          </item>
+          <item row="3" column="4">
+           <widget class="QDoubleSpinBox" name="spin_sens_ry"/>
+          </item>
+          <item row="5" column="4">
+           <widget class="QDoubleSpinBox" name="spin_sens_rz"/>
+          </item>
          </layout>
         </widget>
        </item>
@@ -736,6 +913,19 @@
       <attribute name="title">
        <string>Buttons</string>
       </attribute>
+      <widget class="QLabel" name="label_19">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>150</y>
+         <width>471</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>TODO: Button mapping, keyboard emulation, actions and so on....</string>
+       </property>
+      </widget>
      </widget>
     </widget>
    </item>
@@ -823,6 +1013,118 @@
     <hint type="destinationlabel">
      <x>685</x>
      <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chk_dead_global</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spin_dead_tx</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>649</x>
+     <y>271</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>738</x>
+     <y>355</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chk_dead_global</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spin_dead_ty</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>728</x>
+     <y>284</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>747</x>
+     <y>393</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chk_dead_global</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spin_dead_tz</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>639</x>
+     <y>279</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>765</x>
+     <y>429</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chk_dead_global</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spin_dead_rx</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>622</x>
+     <y>280</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>743</x>
+     <y>520</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chk_dead_global</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spin_dead_ry</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>625</x>
+     <y>275</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>755</x>
+     <y>560</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chk_dead_global</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spin_dead_rz</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>627</x>
+     <y>279</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>769</x>
+     <y>599</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chk_dead_global</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>spin_dead</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>629</x>
+     <y>272</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>760</x>
+     <y>277</y>
     </hint>
    </hints>
   </connection>

@@ -1,14 +1,16 @@
+csrc = $(wildcard src/*.c)
 ccsrc = $(wildcard src/*.cc)
 mochdr = src/ui.h
 mocsrc = $(mochdr:.h=.moc.cc)
-obj = $(ccsrc:.cc=.o) $(mocsrc:.cc=.o)
-dep = $(ccsrc:.cc=.d)
+obj = $(csrc:.c=.o) $(ccsrc:.cc=.o) $(mocsrc:.cc=.o) res.cc
+dep = $(csrc:.c=.d) $(ccsrc:.cc=.d)
 bin = spnavcfg
 
 CC ?= gcc
 CXX ?= g++
 UIC ?= uic
 MOC ?= moc
+RCC ?= rcc
 
 warn = -pedantic -Wall
 incdir = -I.
@@ -30,9 +32,12 @@ ui_mainwin.h: ui/spnavcfg.ui
 %.moc.cc: %.h
 	$(MOC) -o $@ $(incdir) $<
 
+res.cc: ui/spnavcfg.qrc icons/devices.png
+	$(RCC) -o $@ $<
+
 .PHONY: clean
 clean:
-	rm -f $(obj) $(bin) $(mocsrc) win_main_ui.h
+	rm -f $(obj) $(bin) $(mocsrc) win_main_ui.h res.cc
 
 .PHONY: cleandep
 cleandep:
