@@ -98,6 +98,17 @@ MainWin::MainWin(QWidget *par)
 	prog_axis[3] = ui->prog_rx;
 	prog_axis[4] = ui->prog_ry;
 	prog_axis[5] = ui->prog_rz;
+
+	connect(ui->bn_loaddef, SIGNAL(clicked()), this, SLOT(bn_clicked()));
+	connect(ui->bn_loadcfg, SIGNAL(clicked()), this, SLOT(bn_clicked()));
+	connect(ui->bn_savecfg, SIGNAL(clicked()), this, SLOT(bn_clicked()));
+
+	connect(ui->slider_sens, SIGNAL(sliderMoved(int)), this, SLOT(slider_moved(int)));
+	connect(ui->spin_sens, SIGNAL(valueChanged(double)), this, SLOT(dspin_changed(double)));
+	for(int i=0; i<6; i++) {
+		connect(slider_sens_axis[i], SIGNAL(sliderMoved(int)), this, SLOT(slider_moved(int)));
+		connect(spin_sens_axis[i], SIGNAL(valueChanged(double)), this, SLOT(dspin_changed(double)));
+	}
 }
 
 MainWin::~MainWin()
@@ -190,6 +201,74 @@ void MainWin::spnav_input()
 			break;
 
 		default:
+			break;
+		}
+	}
+}
+
+static const char *qdefaults_text =
+	"Restoring the default spacenavd settings will undo all changes.\n"
+	"Are you sure you want to proceed?";
+static const char *qload_text =
+	"Restoring spacenavd settings from the configuration file, will undo any changes since the last save!\n"
+	"Are you sure you want to proceed?";
+static const char *qsave_text =
+	"Saving will overwrite the current spacenavd configuration file.\n"
+	"Are you sure you want to proceed?";
+
+void MainWin::bn_clicked()
+{
+	QObject *src = QObject::sender();
+	if(src == ui->bn_loaddef) {
+		if(QMessageBox::question(this, "Reset defaults?", qdefaults_text) == QMessageBox::Yes) {
+			spnav_cfg_reset();
+		}
+	} else if(src == ui->bn_loadcfg) {
+		if(QMessageBox::question(this, "Restore configuration?", qload_text) == QMessageBox::Yes) {
+			spnav_cfg_restore();
+		}
+	} else if(src == ui->bn_savecfg) {
+		if(QMessageBox::question(this, "Save configuration?", qsave_text) == QMessageBox::Yes) {
+			spnav_cfg_save();
+		}
+	}
+}
+
+void MainWin::slider_moved(int val)
+{
+	QObject *src = QObject::sender();
+	if(src == ui->slider_sens) {
+		cfg.sens = val / 10.0f;
+		ui->spin_sens->setValue(cfg.sens);
+		spnav_cfg_set_sens(cfg.sens);
+		return;
+	}
+
+	for(int i=0; i<6; i++) {
+		if(src == slider_sens_axis[i]) {
+			cfg.sens_axis[i] = val / 10.0f;
+			spin_sens_axis[i]->setValue(cfg.sens_axis[i]);
+			spnav_cfg_set_axis_sens(cfg.sens_axis);
+			break;
+		}
+	}
+}
+
+void MainWin::dspin_changed(double val)
+{
+	QObject *src = QObject::sender();
+	if(src == ui->spin_sens) {
+		cfg.sens = val;
+		ui->slider_sens->setValue(val * 10.0f);
+		spnav_cfg_set_sens(cfg.sens);
+		return;
+	}
+
+	for(int i=0; i<6; i++) {
+		if(src == spin_sens_axis[i]) {
+			cfg.sens_axis[i] = val;
+			slider_sens_axis[i]->setValue(val * 10.0f);
+			spnav_cfg_set_axis_sens(cfg.sens_axis);
 			break;
 		}
 	}

@@ -23,6 +23,10 @@ public:
 
 public slots:
 	void spnav_input();
+
+	void bn_clicked();
+	void slider_moved(int val);
+	void dspin_changed(double val);
 };
 
 extern MainWin *mainwin;

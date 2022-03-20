@@ -1039,8 +1039,8 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>728</x>
-     <y>284</y>
+     <x>712</x>
+     <y>285</y>
     </hint>
     <hint type="destinationlabel">
      <x>747</x>
@@ -1075,8 +1075,8 @@
      <y>280</y>
     </hint>
     <hint type="destinationlabel">
-     <x>743</x>
-     <y>520</y>
+     <x>727</x>
+     <y>530</y>
     </hint>
    </hints>
   </connection>
@@ -1091,8 +1091,8 @@
      <y>275</y>
     </hint>
     <hint type="destinationlabel">
-     <x>755</x>
-     <y>560</y>
+     <x>739</x>
+     <y>572</y>
     </hint>
    </hints>
   </connection>
@@ -1107,8 +1107,8 @@
      <y>279</y>
     </hint>
     <hint type="destinationlabel">
-     <x>769</x>
-     <y>599</y>
+     <x>753</x>
+     <y>613</y>
     </hint>
    </hints>
   </connection>
@@ -1129,4 +1129,7 @@
    </hints>
   </connection>
  </connections>
+ <slots>
+  <slot>slider_moved(int)</slot>
+ </slots>
 </ui>
