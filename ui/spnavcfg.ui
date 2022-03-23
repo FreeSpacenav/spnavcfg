@@ -913,19 +913,25 @@
       <attribute name="title">
        <string>Buttons</string>
       </attribute>
-      <widget class="QLabel" name="label_19">
-       <property name="geometry">
-        <rect>
-         <x>140</x>
-         <y>150</y>
-         <width>471</width>
-         <height>41</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>TODO: Button mapping, keyboard emulation, actions and so on....</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QScrollArea" name="scroll_area_buttons">
+         <property name="widgetResizable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="scrollAreaWidgetContents">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>758</width>
+            <height>378</height>
+           </rect>
+          </property>
+         </widget>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>

@@ -27,6 +27,10 @@ public slots:
 	void bn_clicked();
 	void slider_moved(int val);
 	void dspin_changed(double val);
+	void spin_changed(int val);
+	void chk_changed(int checked);
+	void combo_idx_changed(int sel);
+	void serpath_changed();
 };
 
 extern MainWin *mainwin;

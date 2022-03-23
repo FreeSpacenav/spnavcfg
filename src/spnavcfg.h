@@ -14,11 +14,13 @@ enum {TX, TY, TZ, RX, RY, RZ};
 struct config {
 	float sens, sens_axis[6];
 	int invert;
+	int swapyz;
 	int map_axis[MAX_AXES];
 	int dead_thres[MAX_AXES];
 	int map_bn[MAX_BUTTONS];
 	int led, grab;
 	int repeat;
+	char *serdev;
 };
 
 extern struct device_info devinfo;

@@ -14,6 +14,8 @@ static QSpinBox *spin_dead_axis[6];
 static QProgressBar *prog_axis[6];
 static QPixmap *dev_atlas;
 
+static bool mask_events;
+
 
 struct device_image {
 	int devtype;
@@ -52,6 +54,8 @@ static struct device_image devimglist[] = {
 MainWin::MainWin(QWidget *par)
 	: QWidget(par)
 {
+	mask_events = true;
+
 	ui = new Ui::win_main;
 	ui->setupUi(this);
 
@@ -99,15 +103,27 @@ MainWin::MainWin(QWidget *par)
 	prog_axis[4] = ui->prog_ry;
 	prog_axis[5] = ui->prog_rz;
 
+	connect(ui->combo_led, SIGNAL(currentIndexChanged(int)), this, SLOT(combo_idx_changed(int)));
+	connect(ui->ed_serpath, SIGNAL(editingFinished()), this, SLOT(serpath_changed()));
+
 	connect(ui->bn_loaddef, SIGNAL(clicked()), this, SLOT(bn_clicked()));
 	connect(ui->bn_loadcfg, SIGNAL(clicked()), this, SLOT(bn_clicked()));
 	connect(ui->bn_savecfg, SIGNAL(clicked()), this, SLOT(bn_clicked()));
 
+	connect(ui->chk_grab, SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
+	connect(ui->chk_swapyz, SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
+
 	connect(ui->slider_sens, SIGNAL(sliderMoved(int)), this, SLOT(slider_moved(int)));
 	connect(ui->spin_sens, SIGNAL(valueChanged(double)), this, SLOT(dspin_changed(double)));
+	connect(ui->spin_dead, SIGNAL(valueChanged(int)), this, SLOT(spin_changed(int)));
 	for(int i=0; i<6; i++) {
 		connect(slider_sens_axis[i], SIGNAL(sliderMoved(int)), this, SLOT(slider_moved(int)));
 		connect(spin_sens_axis[i], SIGNAL(valueChanged(double)), this, SLOT(dspin_changed(double)));
+		connect(spin_dead_axis[i], SIGNAL(valueChanged(int)), this, SLOT(spin_changed(int)));
+
+		connect(chk_inv[i], SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
+
+		connect(combo_axismap[i], SIGNAL(currentIndexChanged(int)), this, SLOT(combo_idx_changed(int)));
 	}
 }
 
@@ -119,6 +135,8 @@ MainWin::~MainWin()
 
 void MainWin::updateui()
 {
+	mask_events = true;
+
 	struct device_image devimg = devimglist[0];
 	for(int i=0; devimglist[i].devtype != -1; i++) {
 		if(devimglist[i].devtype == devinfo.type) {
@@ -141,6 +159,12 @@ void MainWin::updateui()
 
 	ui->combo_led->setCurrentIndex(cfg.led);
 	ui->chk_grab->setChecked(cfg.grab);
+	if(cfg.serdev) {
+		ui->ed_serpath->setText(cfg.serdev);
+		ui->chk_serial->setChecked(true);
+	} else {
+		ui->chk_serial->setChecked(false);
+	}
 	if(cfg.repeat > 0) {
 		ui->chk_repeat->setChecked(true);
 		ui->spin_repeat->setValue(cfg.repeat);
@@ -156,15 +180,20 @@ void MainWin::updateui()
 		chk_inv[i]->setChecked((cfg.invert >> i) & 1);
 
 		combo_axismap[i]->clear();
+		combo_axismap[i]->addItem("-");
 		for(int j=0; j<devinfo.naxes; j++) {
 			combo_axismap[i]->addItem(QString::number(j));
+			combo_axismap[i]->setCurrentIndex(0);
 		}
 		for(int j=0; j<devinfo.naxes; j++) {
 			if(cfg.map_axis[j] == i) {
-				combo_axismap[i]->setCurrentIndex(j);
+				combo_axismap[i]->setCurrentIndex(j + 1);
 				spin_dead_axis[i]->setValue(cfg.dead_thres[j]);
 			}
 		}
+
+		prog_axis[i]->setValue(0);
+		prog_axis[i]->setEnabled(1);
 	}
 
 	bool same = true;
@@ -176,6 +205,10 @@ void MainWin::updateui()
 
 	ui->spin_dead->setValue(same ? cfg.dead_thres[0] : 0);
 	ui->chk_dead_global->setChecked(same);
+
+	ui->chk_swapyz->setChecked(cfg.swapyz);
+
+	mask_events = false;
 }
 
 void MainWin::spnav_input()
@@ -222,10 +255,12 @@ void MainWin::bn_clicked()
 	if(src == ui->bn_loaddef) {
 		if(QMessageBox::question(this, "Reset defaults?", qdefaults_text) == QMessageBox::Yes) {
 			spnav_cfg_reset();
+			read_cfg(&cfg);
 		}
 	} else if(src == ui->bn_loadcfg) {
 		if(QMessageBox::question(this, "Restore configuration?", qload_text) == QMessageBox::Yes) {
 			spnav_cfg_restore();
+			read_cfg(&cfg);
 		}
 	} else if(src == ui->bn_savecfg) {
 		if(QMessageBox::question(this, "Save configuration?", qsave_text) == QMessageBox::Yes) {
@@ -236,6 +271,8 @@ void MainWin::bn_clicked()
 
 void MainWin::slider_moved(int val)
 {
+	if(mask_events) return;
+
 	QObject *src = QObject::sender();
 	if(src == ui->slider_sens) {
 		cfg.sens = val / 10.0f;
@@ -249,13 +286,15 @@ void MainWin::slider_moved(int val)
 			cfg.sens_axis[i] = val / 10.0f;
 			spin_sens_axis[i]->setValue(cfg.sens_axis[i]);
 			spnav_cfg_set_axis_sens(cfg.sens_axis);
-			break;
+			return;
 		}
 	}
 }
 
 void MainWin::dspin_changed(double val)
 {
+	if(mask_events) return;
+
 	QObject *src = QObject::sender();
 	if(src == ui->spin_sens) {
 		cfg.sens = val;
@@ -269,8 +308,128 @@ void MainWin::dspin_changed(double val)
 			cfg.sens_axis[i] = val;
 			slider_sens_axis[i]->setValue(val * 10.0f);
 			spnav_cfg_set_axis_sens(cfg.sens_axis);
-			break;
+			return;
 		}
+	}
+}
+
+void MainWin::spin_changed(int val)
+{
+	if(mask_events) return;
+
+	QObject *src = QObject::sender();
+	if(src == ui->spin_dead) {
+		for(int i=0; i<devinfo.naxes; i++) {
+			if(cfg.dead_thres[i] != val) {
+				cfg.dead_thres[i] = val;
+				spnav_cfg_set_deadzone(i, val);
+			}
+		}
+		return;
+	}
+
+	for(int i=0; i<6; i++) {
+		if(src == spin_dead_axis[i]) {
+			cfg.dead_thres[i] = val;
+			spnav_cfg_set_deadzone(i, val);
+			return;
+		}
+	}
+}
+
+
+void MainWin::chk_changed(int checked)
+{
+	if(mask_events) return;
+
+	QObject *src = QObject::sender();
+	if(src == ui->chk_grab) {
+		cfg.grab = checked;
+		spnav_cfg_set_grab(checked);
+		return;
+	}
+
+	if(src == ui->chk_swapyz) {
+		cfg.swapyz = checked;
+		spnav_cfg_set_swapyz(checked);
+		return;
+	}
+
+	for(int i=0; i<6; i++) {
+		if(src == chk_inv[i]) {
+			if(checked) {
+				cfg.invert |= 1 << i;
+			} else {
+				cfg.invert &= ~(1 << i);
+			}
+			spnav_cfg_set_invert(cfg.invert);
+			return;
+		}
+	}
+}
+
+static void unmap_axis(int axis, int skip_devaxis)
+{
+	for(int i=0; i<devinfo.naxes; i++) {
+		if(skip_devaxis == i) continue;
+		if(cfg.map_axis[i] == axis) {
+			cfg.map_axis[i] = -1;
+			spnav_cfg_set_axismap(i, -1);
+		}
+	}
+}
+
+void MainWin::combo_idx_changed(int sel)
+{
+	if(mask_events) return;
+
+	QObject *src = QObject::sender();
+	if(src == ui->combo_led) {
+		cfg.led = sel;
+		spnav_cfg_set_led(sel);
+		return;
+	}
+
+	for(int i=0; i<6; i++) {
+		if(src == combo_axismap[i]) {
+			int devaxis = sel - 1;
+
+			if(devaxis < 0) {
+				unmap_axis(i, -1);
+				prog_axis[i]->setEnabled(0);
+				prog_axis[i]->setValue(0);
+			} else {
+				unmap_axis(i, devaxis);
+				cfg.map_axis[devaxis] = i;
+				spnav_cfg_set_axismap(devaxis, i);
+
+				for(int j=0; j<6; j++) {
+					if(j != i && combo_axismap[j]->currentIndex() == sel) {
+						mask_events = true;
+						combo_axismap[j]->setCurrentIndex(0);
+						prog_axis[j]->setEnabled(0);
+						prog_axis[j]->setValue(0);
+						mask_events = false;
+					}
+				}
+
+				if(!prog_axis[i]->isEnabled()) {
+					prog_axis[i]->setEnabled(1);
+				}
+			}
+			return;
+		}
+	}
+}
+
+void MainWin::serpath_changed()
+{
+	free(cfg.serdev);
+	cfg.serdev = strdup(ui->ed_serpath->text().toUtf8().data());
+
+	if(cfg.serdev) {
+		spnav_cfg_set_serial(cfg.serdev);
+		read_cfg(&cfg);
 	}
 }
 
