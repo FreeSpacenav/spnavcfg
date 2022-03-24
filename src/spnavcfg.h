@@ -2,14 +2,15 @@
 #define SPNAVCFG_H_
 
 struct device_info {
-	char *name, *path;
+	char *name;
+	char *path;
 	int nbuttons, naxes;
 	int type;
 };
 
 enum {TX, TY, TZ, RX, RY, RZ};
-#define MAX_BUTTONS	64
-#define MAX_AXES	64
+#define MAX_BUTTONS	128
+#define MAX_AXES	128
 
 struct config {
 	float sens, sens_axis[6];
