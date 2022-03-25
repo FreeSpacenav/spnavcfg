@@ -9,20 +9,20 @@ struct config cfg;
 
 int read_devinfo(struct device_info *inf)
 {
-	int sz;
+	int len;
 
 	free(inf->name);
 	free(inf->path);
 	memset(inf, 0, sizeof *inf);
 
-	if((sz = spnav_dev_name(0, 0)) > 0) {
-		if((inf->name = malloc(sz))) {
-			spnav_dev_name(inf->name, sz);
+	if((len = spnav_dev_name(0, 0)) > 0) {
+		if((inf->name = malloc(len + 1))) {
+			spnav_dev_name(inf->name, len + 1);
 		}
 	}
-	if((sz = spnav_dev_path(0, 0)) > 0) {
-		if((inf->path = malloc(sz))) {
-			spnav_dev_path(inf->path, sz);
+	if((len = spnav_dev_path(0, 0)) > 0) {
+		if((inf->path = malloc(len + 1))) {
+			spnav_dev_path(inf->path, len + 1);
 		}
 	}
 	if((inf->nbuttons = spnav_dev_buttons()) > MAX_BUTTONS) {
@@ -37,7 +37,7 @@ int read_devinfo(struct device_info *inf)
 
 int read_cfg(struct config *cfg)
 {
-	int i, sz;
+	int i, len;
 
 	free(cfg->serdev);
 	memset(cfg, 0, sizeof *cfg);
@@ -57,9 +57,9 @@ int read_cfg(struct config *cfg)
 		cfg->map_bn[i] = spnav_cfg_get_bnmap(i);
 	}
 
-	if((sz = spnav_cfg_get_serial(0, 0)) > 0) {
-		if((cfg->serdev = malloc(sz))) {
-			spnav_cfg_get_serial(cfg->serdev, sz);
+	if((len = spnav_cfg_get_serial(0, 0)) > 0) {
+		if((cfg->serdev = malloc(len + 1))) {
+			spnav_cfg_get_serial(cfg->serdev, len + 1);
 		}
 	}
 

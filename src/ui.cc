@@ -105,6 +105,7 @@ MainWin::MainWin(QWidget *par)
 
 	connect(ui->combo_led, SIGNAL(currentIndexChanged(int)), this, SLOT(combo_idx_changed(int)));
 	connect(ui->ed_serpath, SIGNAL(editingFinished()), this, SLOT(serpath_changed()));
+	connect(ui->chk_serial, SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
 
 	connect(ui->bn_loaddef, SIGNAL(clicked()), this, SLOT(bn_clicked()));
 	connect(ui->bn_loadcfg, SIGNAL(clicked()), this, SLOT(bn_clicked()));
@@ -347,6 +348,11 @@ void MainWin::chk_changed(int checked)
 		cfg.grab = checked;
 		spnav_cfg_set_grab(checked);
 		return;
+	}
+
+	if(src == ui->chk_serial) {
+		*cfg.serdev = 0;
+		spnav_cfg_set_serial(cfg.serdev);
 	}
 
 	if(src == ui->chk_swapyz) {
