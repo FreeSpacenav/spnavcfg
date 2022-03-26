@@ -279,7 +279,7 @@ void MainWin::spnav_input()
 			}
 			break;
 
-		case SPNAV_EVENT_BUTTON:
+		case SPNAV_EVENT_RAWBUTTON:
 			assert(ev.button.bnum < bnrow_count);
 			lb = bnrow[ev.button.bnum].lb_bidx;
 
@@ -460,10 +460,8 @@ void MainWin::rad_changed(bool active)
 		}
 		if(src == bnrow[i].rad_action) {
 			if(active) {
-				printf("bnaction %d active\n", i);
 				spnav_cfg_set_bnaction(i, cfg.bnact[i]);
 			} else {
-				printf("bnaction %d off\n", i);
 				spnav_cfg_set_bnaction(i, SPNAV_BNACT_NONE);
 			}
 			return;
