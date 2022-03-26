@@ -29,6 +29,7 @@ public slots:
 	void dspin_changed(double val);
 	void spin_changed(int val);
 	void chk_changed(int checked);
+	void rad_changed(bool active);
 	void combo_idx_changed(int sel);
 	void serpath_changed();
 };

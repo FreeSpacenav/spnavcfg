@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <assert.h>
 #define SPNAV_CONFIG_H_
 #include <spnav.h>
 #include "ui.h"
 #include "spnavcfg.h"
 #include "ui_mainwin.h"
+#include "ui_bnmaprow.h"
 #include <QMessageBox>
 
 static QSlider *slider_sens_axis[6];
@@ -13,6 +15,11 @@ static QDoubleSpinBox *spin_sens_axis[6];
 static QSpinBox *spin_dead_axis[6];
 static QProgressBar *prog_axis[6];
 static QPixmap *dev_atlas;
+
+static Ui::row_bnmap *bnrow;
+static QVBoxLayout *vbox_bnui;
+static QWidget *bnrow_root;
+static int bnrow_count;
 
 static bool mask_events;
 
@@ -130,6 +137,10 @@ MainWin::MainWin(QWidget *par)
 
 MainWin::~MainWin()
 {
+	delete [] bnrow_root;
+	delete [] bnrow;
+	delete vbox_bnui;
+
 	delete ui;
 	delete dev_atlas;
 }
@@ -209,6 +220,38 @@ void MainWin::updateui()
 
 	ui->chk_swapyz->setChecked(cfg.swapyz);
 
+	// button mapping ui
+	delete [] bnrow_root;
+	delete [] bnrow;
+	delete vbox_bnui;
+
+	bnrow_count = devinfo.nbuttons;
+	bnrow = new Ui::row_bnmap[bnrow_count];
+	bnrow_root = new QWidget[bnrow_count];
+
+	vbox_bnui = new QVBoxLayout;
+	ui->scroll_area_buttons_cont->setLayout(vbox_bnui);
+
+	for(int i=0; i<bnrow_count; i++) {
+		bnrow[i].setupUi(bnrow_root + i);
+		vbox_bnui->addWidget(bnrow_root + i);
+
+		bnrow[i].lb_bidx->setText(QString::asprintf("%02d", i));
+		bnrow[i].spin_bnmap->setMaximum(devinfo.nbuttons - 1);
+		bnrow[i].spin_bnmap->setValue(cfg.map_bn[i]);
+
+		bnrow[i].cmb_action->setCurrentIndex(cfg.bnact[i]);
+		if(cfg.bnact[i]) {
+			bnrow[i].rad_action->setChecked(true);
+		}
+
+		connect(bnrow[i].rad_bnmap, SIGNAL(toggled(bool)), this, SLOT(rad_changed(bool)));
+		connect(bnrow[i].spin_bnmap, SIGNAL(valueChanged(int)), this, SLOT(spin_changed(int)));
+		connect(bnrow[i].rad_action, SIGNAL(toggled(bool)), this, SLOT(rad_changed(bool)));
+		connect(bnrow[i].cmb_action, SIGNAL(currentIndexChanged(int)), this, SLOT(combo_idx_changed(int)));
+		connect(bnrow[i].rad_mapkey, SIGNAL(toggled(bool)), this, SLOT(rad_changed(bool)));
+	}
+
 	mask_events = false;
 }
 
@@ -216,6 +259,9 @@ void MainWin::spnav_input()
 {
 	static int maxval = 256;
 	spnav_event ev;
+	QLabel *lb;
+	QPalette cmap;
+	static QPalette def_cmap;
 
 	while(spnav_poll_event(&ev)) {
 		switch(ev.type) {
@@ -231,7 +277,20 @@ void MainWin::spnav_input()
 			break;
 
 		case SPNAV_EVENT_BUTTON:
-			// TODO
+			assert(ev.button.bnum < bnrow_count);
+			lb = bnrow[ev.button.bnum].lb_bidx;
+
+			if(ev.button.press) {
+				def_cmap = cmap = lb->palette();
+				cmap.setColor(QPalette::WindowText, Qt::red);
+				lb->setPalette(cmap);
+			} else {
+				lb->setPalette(def_cmap);
+			}
+			break;
+
+		case SPNAV_EVENT_CFG:
+			read_cfg(&cfg);
 			break;
 
 		default:
@@ -374,6 +433,41 @@ void MainWin::chk_changed(int checked)
 	}
 }
 
+void MainWin::rad_changed(bool active)
+{
+	if(mask_events) return;
+
+	QObject *src = QObject::sender();
+	for(int i=0; i<bnrow_count; i++) {
+		if(src == bnrow[i].rad_bnmap) {
+			if(!active) return;
+			spnav_cfg_set_bnmap(i, cfg.map_bn[i]);
+			return;
+		}
+		if(src == bnrow[i].rad_action) {
+			if(active) {
+				printf("bnaction %d active\n", i);
+				spnav_cfg_set_bnaction(i, cfg.bnact[i]);
+			} else {
+				printf("bnaction %d off\n", i);
+				spnav_cfg_set_bnaction(i, SPNAV_BNACT_NONE);
+			}
+			return;
+		}
+		if(src == bnrow[i].rad_mapkey) {
+			// TODO
+			if(active) {
+				static bool warned;
+				if(!warned) {
+					errorbox("Sorry, Keyboard mapping from the UI not implemented yet.");
+					warned = true;
+				}
+			}
+			return;
+		}
+	}
+}
+
 static void unmap_axis(int axis, int skip_devaxis)
 {
 	for(int i=0; i<devinfo.naxes; i++) {
@@ -423,6 +517,14 @@ void MainWin::combo_idx_changed(int sel)
 					prog_axis[i]->setEnabled(1);
 				}
 			}
+			return;
+		}
+	}
+
+	for(int i=0; i<bnrow_count; i++) {
+		if(src == bnrow[i].cmb_action) {
+			cfg.bnact[i] = bnrow[i].cmb_action->currentIndex();
+			spnav_cfg_set_bnaction(i, cfg.bnact[i]);
 			return;
 		}
 	}

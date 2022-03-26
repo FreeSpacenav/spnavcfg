@@ -25,9 +25,13 @@ $(bin): $(obj)
 
 -include $(dep)
 
-src/main.o: src/main.cc ui_mainwin.h
+src/main.o: src/main.cc
+src/ui.o: src/ui.cc ui_mainwin.h ui_bnmaprow.h
 
 ui_mainwin.h: ui/spnavcfg.ui
+	$(UIC) -o $@ $<
+
+ui_bnmaprow.h: ui/bnmaprow.ui
 	$(UIC) -o $@ $<
 
 %.moc.cc: %.h

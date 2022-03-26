@@ -4,4 +4,5 @@
 Makefile
 spnavcfg
 ui_mainwin.h
+ui_bnmaprow.h
 res.cc

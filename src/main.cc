@@ -38,6 +38,7 @@ static bool init()
 		return false;
 	}
 	spnav_client_name("spnavcfg");
+	spnav_evmask(SPNAV_EVMASK_ALL);
 
 	if(read_devinfo(&devinfo) == -1) {
 		errorbox("Failed to read device info.");
