@@ -25,6 +25,8 @@ static int bnrow_count;
 
 static bool mask_events;
 
+static QPalette def_cmb_cmap;
+
 
 struct device_image {
 	int devtype;
@@ -246,6 +248,14 @@ void MainWin::updateui()
 		if(cfg.bnact[i]) {
 			bnrow[i].rad_action->setChecked(true);
 		}
+
+		char *str;
+		if(cfg.kbmap[i] > 0 && (str = XKeysymToString(cfg.kbmap[i]))) {
+			bnrow[i].rad_mapkey->setChecked(true);
+			bnrow[i].cmb_mapkey->setCurrentText(str);
+		}
+		bnrow[i].cmb_mapkey->setCompleter(0);
+		def_cmb_cmap = bnrow[i].cmb_mapkey->lineEdit()->palette();
 
 		connect(bnrow[i].rad_bnmap, SIGNAL(toggled(bool)), this, SLOT(rad_changed(bool)));
 		connect(bnrow[i].spin_bnmap, SIGNAL(valueChanged(int)), this, SLOT(spin_changed(int)));
@@ -556,11 +566,15 @@ void MainWin::combo_str_changed(const QString &qstr)
 			str = qstr.toLatin1().data();
 			if(!str || !*str) return;
 
+			QLineEdit *ed = bnrow[i].cmb_mapkey->lineEdit();
 			KeySym sym = XStringToKeysym(str);
 			if(sym == NoSymbol) {
-				errorboxf("Unknown keysym: \"%s\"", str);
+				QPalette cmap = def_cmb_cmap;
+				cmap.setColor(QPalette::Text, Qt::red);
+				ed->setPalette(cmap);
 				return;
 			}
+			ed->setPalette(def_cmb_cmap);
 
 			cfg.kbmap[i] = sym;
 			spnav_cfg_set_kbmap(i, cfg.kbmap[i]);
