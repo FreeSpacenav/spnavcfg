@@ -8,6 +8,8 @@
 #include "ui_bnmaprow.h"
 #include <QMessageBox>
 
+#include <X11/Xlib.h>
+
 static QSlider *slider_sens_axis[6];
 static QCheckBox *chk_inv[6];
 static QComboBox *combo_axismap[6];
@@ -250,6 +252,7 @@ void MainWin::updateui()
 		connect(bnrow[i].rad_action, SIGNAL(toggled(bool)), this, SLOT(rad_changed(bool)));
 		connect(bnrow[i].cmb_action, SIGNAL(currentIndexChanged(int)), this, SLOT(combo_idx_changed(int)));
 		connect(bnrow[i].rad_mapkey, SIGNAL(toggled(bool)), this, SLOT(rad_changed(bool)));
+		connect(bnrow[i].cmb_mapkey, SIGNAL(currentTextChanged(const QString&)), this, SLOT(combo_str_changed(const QString&)));
 	}
 
 	mask_events = false;
@@ -467,13 +470,12 @@ void MainWin::rad_changed(bool active)
 			return;
 		}
 		if(src == bnrow[i].rad_mapkey) {
-			// TODO
 			if(active) {
-				static bool warned;
-				if(!warned) {
-					errorbox("Sorry, Keyboard mapping from the UI not implemented yet.");
-					warned = true;
+				if(cfg.kbmap[i]) {
+					spnav_cfg_set_kbmap(i, cfg.kbmap[i]);
 				}
+			} else {
+				spnav_cfg_set_kbmap(i, 0);
 			}
 			return;
 		}
@@ -542,6 +544,31 @@ void MainWin::combo_idx_changed(int sel)
 	}
 }
 
+void MainWin::combo_str_changed(const QString &qstr)
+{
+	const char *str;
+
+	if(mask_events) return;
+
+	QObject *src = QObject::sender();
+	for(int i=0; i<bnrow_count; i++) {
+		if(src == bnrow[i].cmb_mapkey) {
+			str = qstr.toLatin1().data();
+			if(!str || !*str) return;
+
+			KeySym sym = XStringToKeysym(str);
+			if(sym == NoSymbol) {
+				errorboxf("Unknown keysym: \"%s\"", str);
+				return;
+			}
+
+			cfg.kbmap[i] = sym;
+			spnav_cfg_set_kbmap(i, cfg.kbmap[i]);
+			return;
+		}
+	}
+}
+
 void MainWin::serpath_changed()
 {
 	free(cfg.serdev);
@@ -561,4 +588,16 @@ extern "C" void update_ui(void)
 extern "C" void errorbox(const char *msg)
 {
 	QMessageBox::critical(mainwin, "Error", msg, QMessageBox::Ok);
+}
+
+extern "C" void errorboxf(const char *fmt, ...)
+{
+	va_list ap;
+	static char buf[512];
+
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof buf, fmt, ap);
+	va_end(ap);
+
+	errorbox(buf);
 }

@@ -20,6 +20,7 @@ struct config {
 	int dead_thres[MAX_AXES];
 	int map_bn[MAX_BUTTONS];
 	int bnact[MAX_BUTTONS];
+	int kbmap[MAX_BUTTONS];
 	int led, grab;
 	int repeat;
 	char *serdev;

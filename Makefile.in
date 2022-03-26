@@ -18,7 +18,7 @@ incdir = -I.
 CFLAGS = $(warn) $(dbg) $(opt) $(incdir) -fPIC $(add_cflags) -MMD
 CXXFLAGS = $(warn) $(dbg) $(opt) $(incdir) -fPIC `pkg-config --cflags Qt5Core Qt5Gui Qt5Widgets` \
 		 $(add_cflags) -MMD
-LDFLAGS = `pkg-config --libs Qt5Core Qt5Gui Qt5Widgets` -lspnav $(add_ldflags)
+LDFLAGS = `pkg-config --libs Qt5Core Qt5Gui Qt5Widgets` -lspnav -lX11 $(add_ldflags)
 
 $(bin): $(obj)
 	$(CXX) -o $@ $(obj) $(LDFLAGS)

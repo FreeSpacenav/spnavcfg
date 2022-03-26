@@ -31,6 +31,7 @@ public slots:
 	void chk_changed(int checked);
 	void rad_changed(bool active);
 	void combo_idx_changed(int sel);
+	void combo_str_changed(const QString &qstr);
 	void serpath_changed();
 };
 
@@ -41,6 +42,7 @@ extern "C" {
 
 void update_ui(void);
 void errorbox(const char *msg);
+void errorboxf(const char *fmt, ...);
 
 #ifdef __cplusplus
 }
