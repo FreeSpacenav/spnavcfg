@@ -257,7 +257,10 @@ void MainWin::updateui()
 
 void MainWin::spnav_input()
 {
+	static unsigned char bnstate[MAX_BUTTONS];
 	static int maxval = 256;
+	char bnstr[MAX_BUTTONS * 4 + 20];
+	char *endp;
 	spnav_event ev;
 	QLabel *lb;
 	QPalette cmap;
@@ -281,12 +284,23 @@ void MainWin::spnav_input()
 			lb = bnrow[ev.button.bnum].lb_bidx;
 
 			if(ev.button.press) {
+				bnstate[ev.button.bnum] = 1;
 				def_cmap = cmap = lb->palette();
 				cmap.setColor(QPalette::WindowText, Qt::red);
 				lb->setPalette(cmap);
 			} else {
+				bnstate[ev.button.bnum] = 0;
 				lb->setPalette(def_cmap);
 			}
+
+			strcpy(bnstr, "Buttons pressed:");
+			endp = bnstr + strlen(bnstr);
+			for(int i=0; i<devinfo.nbuttons; i++) {
+				if(bnstate[i]) {
+					endp += sprintf(endp, " %02d", i);
+				}
+			}
+			ui->lb_bnstate->setText(bnstr);
 			break;
 
 		case SPNAV_EVENT_CFG:

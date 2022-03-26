@@ -915,6 +915,13 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
+        <widget class="QLabel" name="lb_bnstate">
+         <property name="text">
+          <string>Buttons pressed:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QScrollArea" name="scroll_area_buttons">
          <property name="widgetResizable">
           <bool>true</bool>
@@ -925,7 +932,7 @@
             <x>0</x>
             <y>0</y>
             <width>758</width>
-            <height>378</height>
+            <height>355</height>
            </rect>
           </property>
          </widget>
