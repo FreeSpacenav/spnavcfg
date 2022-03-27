@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>dlg_about</class>
+ <widget class="QDialog" name="dlg_about">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>605</width>
+    <height>366</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>About spnavcfg</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:18pt; font-weight:600;&quot;&gt;spnavcfg&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:11pt;&quot;&gt;spacenavd configuration utility&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Maximum</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+
+&lt;p&gt;&lt;b&gt;spnavcfg&lt;/b&gt; is part of the &lt;i&gt;Free Spacenav&lt;/i&gt; project. It's a graphical interactive configuration utility for the &lt;i&gt;spacenavd&lt;/i&gt; daemon: the free driver for 6-degree-of-freedom input devices.&lt;/p&gt;
+
+&lt;p&gt;All parts of the Free Spacenav project are free software. See their respective licenses for details.&lt;/p&gt;
+
+&lt;p&gt;Author &amp;amp; maintainer: John Tsiombikas &amp;lt;&lt;a href=&quot;mailto:nuclear@member.fsf.org&quot;&gt;nuclear@member.fsf.org&lt;/a&gt;&amp;gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Project website: &lt;a href=&quot;http://spacenav.sourceforge.net&quot;&gt;http://spacenav.sourceforge.net&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Spacenavd repository: &lt;a href=&quot;https://github.com/FreeSpacenav/spacenavd&quot;&gt;https://github.com/FreeSpacenav/spacenavd&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;libspnav repository: &lt;a href=&quot;https://githib.com/FreeSpacenav/libspnav&quot;&gt;https://github.com/FreeSpacenav/libspnav&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;spnavcfg repository: &lt;a href=&quot;https://github.com/FreeSpacenav/spnavcfg&quot;&gt;https://github.com/FreeSpacenav/spnavcfg&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close</set>
+     </property>
+     <property name="centerButtons">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>dlg_about</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>dlg_about</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

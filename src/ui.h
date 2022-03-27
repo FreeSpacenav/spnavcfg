@@ -3,13 +3,13 @@
 
 #ifdef __cplusplus
 
-#include <QWidget>
+#include <QMainWindow>
 
 namespace Ui {
 	class win_main;
 }
 
-class MainWin : public QWidget {
+class MainWin : public QMainWindow {
 	Q_OBJECT
 
 private:
@@ -24,7 +24,7 @@ public:
 public slots:
 	void spnav_input();
 
-	void bn_clicked();
+	void act_trig();
 	void slider_moved(int val);
 	void dspin_changed(double val);
 	void spin_changed(int val);
@@ -43,6 +43,7 @@ extern "C" {
 void update_ui(void);
 void errorbox(const char *msg);
 void errorboxf(const char *fmt, ...);
+void aboutbox(void);
 
 #ifdef __cplusplus
 }

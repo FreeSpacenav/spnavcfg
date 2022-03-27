@@ -6,6 +6,7 @@
 #include "spnavcfg.h"
 #include "ui_mainwin.h"
 #include "ui_bnmaprow.h"
+#include "ui_about.h"
 #include <QMessageBox>
 
 #include <X11/Xlib.h>
@@ -63,7 +64,7 @@ static struct device_image devimglist[] = {
 
 
 MainWin::MainWin(QWidget *par)
-	: QWidget(par)
+	: QMainWindow(par)
 {
 	mask_events = true;
 
@@ -114,13 +115,20 @@ MainWin::MainWin(QWidget *par)
 	prog_axis[4] = ui->prog_ry;
 	prog_axis[5] = ui->prog_rz;
 
+	connect(ui->act_default, SIGNAL(triggered()), this, SLOT(act_trig()));
+	connect(ui->act_loadcfg, SIGNAL(triggered()), this, SLOT(act_trig()));
+	connect(ui->act_savecfg, SIGNAL(triggered()), this, SLOT(act_trig()));
+	connect(ui->act_about, SIGNAL(triggered()), this, SLOT(act_trig()));
+
 	connect(ui->combo_led, SIGNAL(currentIndexChanged(int)), this, SLOT(combo_idx_changed(int)));
 	connect(ui->ed_serpath, SIGNAL(editingFinished()), this, SLOT(serpath_changed()));
 	connect(ui->chk_serial, SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
 
+	/*
 	connect(ui->bn_loaddef, SIGNAL(clicked()), this, SLOT(bn_clicked()));
 	connect(ui->bn_loadcfg, SIGNAL(clicked()), this, SLOT(bn_clicked()));
 	connect(ui->bn_savecfg, SIGNAL(clicked()), this, SLOT(bn_clicked()));
+	*/
 
 	connect(ui->chk_grab, SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
 	connect(ui->chk_swapyz, SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
@@ -336,23 +344,25 @@ static const char *qsave_text =
 	"Saving will overwrite the current spacenavd configuration file.\n"
 	"Are you sure you want to proceed?";
 
-void MainWin::bn_clicked()
+void MainWin::act_trig()
 {
 	QObject *src = QObject::sender();
-	if(src == ui->bn_loaddef) {
+	if(src == ui->act_default) {
 		if(QMessageBox::question(this, "Reset defaults?", qdefaults_text) == QMessageBox::Yes) {
 			spnav_cfg_reset();
 			read_cfg(&cfg);
 		}
-	} else if(src == ui->bn_loadcfg) {
+	} else if(src == ui->act_loadcfg) {
 		if(QMessageBox::question(this, "Restore configuration?", qload_text) == QMessageBox::Yes) {
 			spnav_cfg_restore();
 			read_cfg(&cfg);
 		}
-	} else if(src == ui->bn_savecfg) {
+	} else if(src == ui->act_savecfg) {
 		if(QMessageBox::question(this, "Save configuration?", qsave_text) == QMessageBox::Yes) {
 			spnav_cfg_save();
 		}
+	} else if(src == ui->act_about) {
+		aboutbox();
 	}
 }
 
@@ -614,4 +624,14 @@ extern "C" void errorboxf(const char *fmt, ...)
 	va_end(ap);
 
 	errorbox(buf);
+}
+
+extern "C" void aboutbox(void)
+{
+	QDialog *dlg = new QDialog(mainwin);
+	Ui::dlg_about about;
+	about.setupUi(dlg);
+	dlg->exec();
+
+	delete dlg;
 }

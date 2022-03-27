@@ -26,12 +26,15 @@ $(bin): $(obj)
 -include $(dep)
 
 src/main.o: src/main.cc
-src/ui.o: src/ui.cc ui_mainwin.h ui_bnmaprow.h
+src/ui.o: src/ui.cc ui_mainwin.h ui_bnmaprow.h ui_about.h
 
 ui_mainwin.h: ui/spnavcfg.ui
 	$(UIC) -o $@ $<
 
 ui_bnmaprow.h: ui/bnmaprow.ui
+	$(UIC) -o $@ $<
+
+ui_about.h: ui/about.ui
 	$(UIC) -o $@ $<
 
 %.moc.cc: %.h
@@ -42,7 +45,7 @@ res.cc: ui/spnavcfg.qrc icons/devices.png
 
 .PHONY: clean
 clean:
-	rm -f $(obj) $(bin) $(mocsrc) win_main_ui.h res.cc
+	rm -f $(obj) $(bin) $(mocsrc) ui_mainwin.h ui_bnmaprow.h ui_about.h res.cc
 
 .PHONY: cleandep
 cleandep:
