@@ -647,13 +647,34 @@
             </widget>
            </item>
            <item row="1" column="4">
-            <widget class="QDoubleSpinBox" name="spin_sens_tx"/>
+            <widget class="QDoubleSpinBox" name="spin_sens_tx">
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
            </item>
            <item row="3" column="4">
-            <widget class="QDoubleSpinBox" name="spin_sens_ty"/>
+            <widget class="QDoubleSpinBox" name="spin_sens_ty">
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
            </item>
            <item row="5" column="4">
-            <widget class="QDoubleSpinBox" name="spin_sens_tz"/>
+            <widget class="QDoubleSpinBox" name="spin_sens_tz">
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -900,13 +921,34 @@
             </widget>
            </item>
            <item row="1" column="4">
-            <widget class="QDoubleSpinBox" name="spin_sens_rx"/>
+            <widget class="QDoubleSpinBox" name="spin_sens_rx">
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
            </item>
            <item row="3" column="4">
-            <widget class="QDoubleSpinBox" name="spin_sens_ry"/>
+            <widget class="QDoubleSpinBox" name="spin_sens_ry">
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
            </item>
            <item row="5" column="4">
-            <widget class="QDoubleSpinBox" name="spin_sens_rz"/>
+            <widget class="QDoubleSpinBox" name="spin_sens_rz">
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
