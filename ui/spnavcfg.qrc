@@ -2,5 +2,6 @@
 <RCC version="1.0">
 <qresource>
 	<file>../icons/devices.png</file>
+	<file>../icons/spnavcfg-128x128.png</file>
 </qresource>
 </RCC>

@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Spacenav configuration</string>
   </property>
+  <property name="windowIcon">
+   <iconset theme=":/icons/spnavcfg-128x128.png"/>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
@@ -1070,7 +1073,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>712</x>
-     <y>285</y>
+     <y>286</y>
     </hint>
     <hint type="destinationlabel">
      <x>767</x>
@@ -1122,7 +1125,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>739</x>
-     <y>572</y>
+     <y>587</y>
     </hint>
    </hints>
   </connection>
@@ -1138,7 +1141,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>753</x>
-     <y>613</y>
+     <y>631</y>
     </hint>
    </hints>
   </connection>
