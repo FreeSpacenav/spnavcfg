@@ -25,7 +25,7 @@ public slots:
 	void spnav_input();
 
 	void act_trig();
-	void slider_moved(int val);
+	void slider_changed(int val);
 	void dspin_changed(double val);
 	void spin_changed(int val);
 	void chk_changed(int checked);

@@ -133,11 +133,11 @@ MainWin::MainWin(QWidget *par)
 	connect(ui->chk_grab, SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
 	connect(ui->chk_swapyz, SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
 
-	connect(ui->slider_sens, SIGNAL(sliderMoved(int)), this, SLOT(slider_moved(int)));
+	connect(ui->slider_sens, SIGNAL(valueChanged(int)), this, SLOT(slider_changed(int)));
 	connect(ui->spin_sens, SIGNAL(valueChanged(double)), this, SLOT(dspin_changed(double)));
 	connect(ui->spin_dead, SIGNAL(valueChanged(int)), this, SLOT(spin_changed(int)));
 	for(int i=0; i<6; i++) {
-		connect(slider_sens_axis[i], SIGNAL(sliderMoved(int)), this, SLOT(slider_moved(int)));
+		connect(slider_sens_axis[i], SIGNAL(valueChanged(int)), this, SLOT(slider_changed(int)));
 		connect(spin_sens_axis[i], SIGNAL(valueChanged(double)), this, SLOT(dspin_changed(double)));
 		connect(spin_dead_axis[i], SIGNAL(valueChanged(int)), this, SLOT(spin_changed(int)));
 
@@ -366,7 +366,7 @@ void MainWin::act_trig()
 	}
 }
 
-void MainWin::slider_moved(int val)
+void MainWin::slider_changed(int val)
 {
 	if(mask_events) return;
 

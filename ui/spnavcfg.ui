@@ -7,14 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>689</height>
+    <height>718</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Spacenav configuration</string>
   </property>
   <property name="windowIcon">
-   <iconset theme=":/icons/spnavcfg-128x128.png"/>
+   <iconset theme=":/icons/spnavcfg-128x128.png">
+    <normaloff>.</normaloff>.</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -282,6 +283,16 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_19">
+      <property name="text">
+       <string>Note: changes will only affect the current session, and will not persist across spacenavd restarts, unless you save them to the configuration file by pressing &lt;em&gt;&quot;Save config&quot;&lt;/em&gt;, or selecting it from the File menu.</string>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
     <item>
      <spacer name="verticalSpacer_2">
@@ -978,7 +989,7 @@
              <x>0</x>
              <y>0</y>
              <width>758</width>
-             <height>355</height>
+             <height>346</height>
             </rect>
            </property>
           </widget>
