@@ -10,7 +10,7 @@ Spacenav daemon interactive configuration program.
 
 Compatibility
 -------------
-The current version of spnavcfg works with spacenavd v0.9 or higher (requires a
+The current version of spnavcfg works with spacenavd v1.0 or higher (requires a
 spacenavd which speaks the spnav protocol v1).
 
 This break in compatibility is necessary because the new protocol allows
@@ -30,7 +30,7 @@ which will work with older versions of the daemon is 0.3.1.
 Installation
 ------------
 First make sure you have the dependencies installed:
-  - libspnav v0.4 or higher
+  - libspnav v1.0 or higher
   - Qt 5 (core, gui, and widgets).
 
 To build just run `./configure`, `make`, and `make install` as usual.
