@@ -56,6 +56,7 @@ int read_cfg(struct config *cfg)
 	for(i=0; i<devinfo.nbuttons; i++) {
 		cfg->map_bn[i] = spnav_cfg_get_bnmap(i);
 		cfg->bnact[i] = spnav_cfg_get_bnaction(i);
+		cfg->kbmap[i] = spnav_cfg_get_kbmap(i);
 	}
 
 	if((len = spnav_cfg_get_serial(0, 0)) > 0) {

@@ -134,6 +134,11 @@
      </property>
      <item>
       <property name="text">
+       <string>-</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Escape</string>
       </property>
      </item>
