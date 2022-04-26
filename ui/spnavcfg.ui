@@ -422,28 +422,28 @@
            <string>Translation</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
-           <item row="0" column="2">
+           <item row="0" column="2" alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="label_9">
              <property name="text">
               <string>invert</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="3">
+           <item row="0" column="3" alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="label_10">
              <property name="text">
               <string>sensitivity</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="5">
+           <item row="0" column="5" alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="label_11">
              <property name="text">
               <string>device axis</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="6">
+           <item row="0" column="6" alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="label_20">
              <property name="text">
               <string>deadzone</string>
@@ -479,7 +479,7 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
+           <item row="1" column="2" alignment="Qt::AlignHCenter">
             <widget class="QCheckBox" name="chk_inv_tx">
              <property name="toolTip">
               <string>invert X axis translation</string>
@@ -558,7 +558,7 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="2">
+           <item row="2" column="2" alignment="Qt::AlignHCenter">
             <widget class="QCheckBox" name="chk_inv_ty">
              <property name="toolTip">
               <string>invert Y axis translation</string>
@@ -637,7 +637,7 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="2">
+           <item row="3" column="2" alignment="Qt::AlignHCenter">
             <widget class="QCheckBox" name="chk_inv_tz">
              <property name="toolTip">
               <string>invert Z axis translation</string>
@@ -696,28 +696,28 @@
            <string>Rotation</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="2">
+           <item row="0" column="2" alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="label_12">
              <property name="text">
               <string>invert</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="3">
+           <item row="0" column="3" alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="label_13">
              <property name="text">
               <string>sensitivity</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="5">
+           <item row="0" column="5" alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="label_14">
              <property name="text">
               <string>device axis</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="6">
+           <item row="0" column="6" alignment="Qt::AlignHCenter">
             <widget class="QLabel" name="label_21">
              <property name="text">
               <string>deadzone</string>
@@ -753,7 +753,7 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="2">
+           <item row="1" column="2" alignment="Qt::AlignHCenter">
             <widget class="QCheckBox" name="chk_inv_rx">
              <property name="toolTip">
               <string>invert X axis rotation</string>
@@ -832,7 +832,7 @@
              </property>
             </widget>
            </item>
-           <item row="2" column="2">
+           <item row="2" column="2" alignment="Qt::AlignHCenter">
             <widget class="QCheckBox" name="chk_inv_ry">
              <property name="toolTip">
               <string>invert Y axis rotation</string>
@@ -911,7 +911,7 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="2">
+           <item row="3" column="2" alignment="Qt::AlignHCenter">
             <widget class="QCheckBox" name="chk_inv_rz">
              <property name="toolTip">
               <string>invert Z axis rotation</string>
@@ -988,8 +988,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>96</width>
-             <height>26</height>
+             <width>764</width>
+             <height>337</height>
             </rect>
            </property>
           </widget>
