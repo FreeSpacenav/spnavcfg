@@ -448,7 +448,7 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="5">
+           <item row="1" column="5" rowspan="2">
             <widget class="QComboBox" name="combo_axismap_tx">
              <property name="toolTip">
               <string>Select which device axis affects X translation</string>
@@ -719,7 +719,7 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="5">
+           <item row="1" column="5" rowspan="2">
             <widget class="QComboBox" name="combo_axismap_rx">
              <property name="toolTip">
               <string>Select which device axis affects X rotation</string>
