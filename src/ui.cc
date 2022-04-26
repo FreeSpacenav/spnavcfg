@@ -464,7 +464,8 @@ void MainWin::chk_changed(int checked)
 	}
 
 	if(src == ui->chk_serial) {
-		*cfg.serdev = 0;
+		free(cfg.serdev);
+		cfg.serdev = 0;
 		spnav_cfg_set_serial(cfg.serdev);
 	}
 
