@@ -187,8 +187,8 @@ void MainWin::updateui()
 	}
 	int ncol = dev_atlas->width() / devimg.width;
 	int nrow = dev_atlas->height() / devimg.height;
-	devimg.xoffs = devimg.xoffs * dev_atlas->width() / ncol;
-	devimg.yoffs = devimg.yoffs * dev_atlas->height() / nrow;
+	if (ncol) devimg.xoffs = devimg.xoffs * dev_atlas->width() / ncol;
+	if (nrow) devimg.yoffs = devimg.yoffs * dev_atlas->height() / nrow;
 
 	QPixmap pix = dev_atlas->copy(devimg.xoffs, devimg.yoffs, devimg.width, devimg.height);
 	ui->img_dev->setPixmap(pix);
