@@ -36,6 +36,7 @@ public:
 	explicit MainWin(QWidget *par = 0);
 	~MainWin();
 
+	bool init();
 	void updateui();
 
 public slots:

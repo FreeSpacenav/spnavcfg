@@ -87,8 +87,29 @@ MainWin::MainWin(QWidget *par)
 
 	ui = new Ui::win_main;
 	ui->setupUi(this);
+}
 
+MainWin::~MainWin()
+{
+	delete [] bnrow_root;
+	delete [] bnrow;
+	delete vbox_bnui;
+
+	delete ui;
+	delete dev_atlas;
+}
+
+bool MainWin::init()
+{
 	dev_atlas = new QPixmap(":/icons/devices.png");
+	if(dev_atlas->width() <= 0 || dev_atlas->height() <= 0) {
+		errorbox("spnavcfg was compiled with corrupted icons/devices.png\n"
+				"\nIf you cloned the git repository, you need to enable GIT-LFS "
+				"and clone again. If you don't want to enable LFS, download the "
+				"latest release archive, and extract the devices.png file from "
+				"there, copy it under the icons directory and recompile");
+		return false;
+	}
 
 	slider_sens_axis[0] = ui->slider_sens_tx;
 	slider_sens_axis[1] = ui->slider_sens_ty;
@@ -162,16 +183,8 @@ MainWin::MainWin(QWidget *par)
 
 		connect(combo_axismap[i], SIGNAL(currentIndexChanged(int)), this, SLOT(combo_idx_changed(int)));
 	}
-}
 
-MainWin::~MainWin()
-{
-	delete [] bnrow_root;
-	delete [] bnrow;
-	delete vbox_bnui;
-
-	delete ui;
-	delete dev_atlas;
+	return true;
 }
 
 void MainWin::updateui()

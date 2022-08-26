@@ -45,6 +45,10 @@ int main(int argc, char **argv)
 
 static bool init()
 {
+	if(!mainwin->init()) {
+		return false;
+	}
+
 	if(spnav_open() == -1) {
 		errorbox("Failed to connect to spacenavd!");
 		return false;
