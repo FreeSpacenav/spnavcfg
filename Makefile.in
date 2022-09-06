@@ -13,13 +13,13 @@ MOC ?= moc
 RCC ?= rcc
 
 warn = -pedantic -Wall
-incdir = -I. -I$(PREFIX)/include
-libdir = -L$(PREFIX)/lib
+incpath = -I. -I$(PREFIX)/include
+libpath = -L$(PREFIX)/lib
 
-CFLAGS = $(warn) $(dbg) $(opt) $(incdir) -fPIC $(add_cflags) -MMD
-CXXFLAGS = $(warn) $(dbg) $(opt) $(incdir) -fPIC `pkg-config --cflags Qt5Core Qt5Gui Qt5Widgets` \
+CFLAGS = $(warn) $(dbg) $(opt) $(incpath) -fPIC $(add_cflags) -MMD
+CXXFLAGS = $(warn) $(dbg) $(opt) $(incpath) -fPIC `pkg-config --cflags Qt5Core Qt5Gui Qt5Widgets` \
 		 $(add_cflags) -MMD
-LDFLAGS = $(libdir) `pkg-config --libs Qt5Core Qt5Gui Qt5Widgets` -lspnav -lX11 \
+LDFLAGS = $(libpath) `pkg-config --libs Qt5Core Qt5Gui Qt5Widgets` -lspnav -lX11 \
 		  $(add_ldflags)
 
 $(bin): $(obj)
@@ -40,7 +40,7 @@ ui_about.h: ui/about.ui
 	$(UIC) -o $@ $<
 
 %.moc.cc: %.h
-	$(MOC) -o $@ $(incdir) $<
+	$(MOC) -o $@ $(incpath) $<
 
 res.cc: ui/spnavcfg.qrc icons/devices.png
 	$(RCC) -o $@ $<
