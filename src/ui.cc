@@ -308,6 +308,7 @@ void MainWin::updateui()
 
 void MainWin::spnav_input()
 {
+	static int warned_unexp_bnum;
 	static unsigned char bnstate[MAX_BUTTONS];
 	static int maxval = 256;
 	char bnstr[MAX_BUTTONS * 4 + 20];
@@ -331,6 +332,17 @@ void MainWin::spnav_input()
 			break;
 
 		case SPNAV_EVENT_RAWBUTTON:
+			if(ev.button.bnum >= bnrow_count) {
+				if(!warned_unexp_bnum) {
+					warned_unexp_bnum = 1;
+					errorboxf("Received button %d event on a %d button device.\n"
+							"This is a bug. Please report it:\n"
+							"https://github.com/FreeSpacenav/spnavcfg/issues\n"
+							"This warning will only be shown once.",
+							ev.button.bnum, bnrow_count);
+				}
+				break;
+			}
 			assert(ev.button.bnum < bnrow_count);
 			lb = bnrow[ev.button.bnum].lb_bidx;
 
