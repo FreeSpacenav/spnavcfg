@@ -1,0 +1,40 @@
+name: MacOS X build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: install dependencies
+      run: |
+        brew install qt@5
+        brew link qt@5 --force
+        git clone https://github.com/FreeSpacenav/libspnav
+        cd libspnav
+        ./configure
+        make
+        sudo make install
+
+    - name: configure
+      run: ./configure
+
+    - name: build
+      run: make
+
+    - name: stage install
+      run: DESTDIR=spnavcfg-macosx make install
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: spnavcfg-macosx
+        path: spnavcfg-macosx
+
+# vi:ts=2 sts=2 sw=2 expandtab:
