@@ -2,7 +2,7 @@ csrc = $(wildcard src/*.c)
 ccsrc = $(wildcard src/*.cc)
 mochdr = src/ui.h
 mocsrc = $(mochdr:.h=.moc.cc)
-obj = $(csrc:.c=.o) $(ccsrc:.cc=.o) $(mocsrc:.cc=.o) res.cc
+obj = $(sort $(csrc:.c=.o) $(ccsrc:.cc=.o) $(mocsrc:.cc=.o)) res.cc
 dep = $(csrc:.c=.d) $(ccsrc:.cc=.d)
 bin = spnavcfg
 
