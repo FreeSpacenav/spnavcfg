@@ -162,6 +162,9 @@ bool MainWin::init()
 	connect(ui->ed_serpath, SIGNAL(editingFinished()), this, SLOT(serpath_changed()));
 	connect(ui->chk_serial, SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
 
+	connect(ui->chk_repeat, SIGNAL(stateChanged(int)), this, SLOT(chk_changed(int)));
+	connect(ui->spin_repeat, SIGNAL(valueChanged(int)), this, SLOT(spin_changed(int)));
+
 	/*
 	connect(ui->bn_loaddef, SIGNAL(clicked()), this, SLOT(bn_clicked()));
 	connect(ui->bn_loadcfg, SIGNAL(clicked()), this, SLOT(bn_clicked()));
@@ -219,7 +222,7 @@ void MainWin::updateui()
 	} else {
 		ui->chk_serial->setChecked(false);
 	}
-	if(cfg.repeat > 0) {
+	if(cfg.repeat >= 0) {
 		ui->chk_repeat->setChecked(true);
 		ui->spin_repeat->setValue(cfg.repeat);
 	} else {
@@ -457,6 +460,13 @@ void MainWin::spin_changed(int val)
 	if(mask_events) return;
 
 	QObject *src = QObject::sender();
+
+	if(src == ui->spin_repeat) {
+		cfg.repeat = ui->spin_repeat->value();
+		spnav_cfg_set_repeat(cfg.repeat);
+		return;
+	}
+
 	if(src == ui->spin_dead) {
 		for(int i=0; i<devinfo.naxes; i++) {
 			if(cfg.dead_thres[i] != val) {
@@ -492,6 +502,16 @@ void MainWin::chk_changed(int checked)
 		free(cfg.serdev);
 		cfg.serdev = 0;
 		spnav_cfg_set_serial(cfg.serdev);
+		return;
+	}
+
+	if(src == ui->chk_repeat) {
+		if(checked) {
+			cfg.repeat = ui->spin_repeat->value();
+		} else {
+			cfg.repeat = -1;
+		}
+		spnav_cfg_set_repeat(cfg.repeat);
 	}
 
 	if(src == ui->chk_swapyz) {

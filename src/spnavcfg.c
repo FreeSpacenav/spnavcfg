@@ -82,6 +82,8 @@ int read_cfg(struct config *cfg)
 		}
 	}
 
+	cfg->repeat = spnav_cfg_get_repeat();
+
 	update_ui();
 	return 0;
 }
