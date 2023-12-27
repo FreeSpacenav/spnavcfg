@@ -1,0 +1,47 @@
+name: GNU/Linux meson build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        lfs: true
+
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install ninja-build qt6-base-dev
+        git clone https://github.com/FreeSpacenav/libspnav
+        cd libspnav
+        ./configure
+        make
+        sudo make install
+
+    - name: install latest meson
+      # At least 0.63 required on Ubuntu 22.04 to find Qt 6
+      run: |
+        pipx install meson
+
+    - name: configure
+      run: meson setup _build
+
+    - name: build
+      run: meson compile -C _build
+
+    - name: stage install
+      run: DESTDIR=$GITHUB_WORKSPACE/spnavcfg-gnulinux-meson meson install -C _build
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: spnavcfg-gnulinux-meson
+        path: spnavcfg-gnulinux-meson
+
+# vi:ts=2 sts=2 sw=2 expandtab:

@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <spnav.h>
 #include "ui.h"
 #include "spnavcfg.h"
-#include "ui_mainwin.h"
+#include "ui_spnavcfg.h"
 #include "ui_bnmaprow.h"
 #include "ui_about.h"
 #include <QMessageBox>
