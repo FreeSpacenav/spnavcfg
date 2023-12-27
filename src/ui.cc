@@ -325,7 +325,7 @@ void MainWin::spnav_input()
 		switch(ev.type) {
 		case SPNAV_EVENT_MOTION:
 			for(int i=0; i<6; i++) {
-				if(abs(ev.motion.data[i] > maxval)) maxval = abs(ev.motion.data[i]);
+				if(abs(ev.motion.data[i]) > maxval) maxval = abs(ev.motion.data[i]);
 			}
 			for(int i=0; i<6; i++) {
 				prog_axis[i]->setMinimum(-maxval);
