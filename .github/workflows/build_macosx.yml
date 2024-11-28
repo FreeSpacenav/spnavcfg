@@ -17,7 +17,7 @@ jobs:
 
     - name: install dependencies
       run: |
-        brew install qt@5 pkg-config
+        brew install qt@5 pkg-config libx11
         brew link qt@5 --force
         git clone https://github.com/FreeSpacenav/libspnav
         cd libspnav
