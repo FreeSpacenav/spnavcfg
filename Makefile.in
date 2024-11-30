@@ -1,5 +1,5 @@
-csrc = $(wildcard src/*.c)
-ccsrc = $(wildcard src/*.cc)
+csrc := $(wildcard src/*.c)
+ccsrc := $(wildcard src/*.cc)
 mochdr = src/ui.h
 mocsrc = $(mochdr:.h=.moc.cc)
 obj = $(sort $(csrc:.c=.o) $(ccsrc:.cc=.o) $(mocsrc:.cc=.o)) res.cc
