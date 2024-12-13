@@ -34,7 +34,7 @@ jobs:
     - name: stage install
       run: DESTDIR=spnavcfg-macosx make install
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: spnavcfg-macosx
         path: spnavcfg-macosx

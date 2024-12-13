@@ -31,7 +31,7 @@ jobs:
           gmake UIC=uic-qt5 MOC=moc-qt5 RCC=rcc-qt5
           gmake DESTDIR=spnavcfg-freebsd install
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: spnavcfg-freebsd
         path: spnavcfg-freebsd
