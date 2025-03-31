@@ -22,7 +22,7 @@ jobs:
       with:
         prepare: |
           pkg install -y git gmake libX11 qt5-core qt5-gui qt5-widgets qt5-buildtools pkgconf
-          git clone https://github.com/FreeSpacenav/libspnav
+          git clone --depth 1 https://github.com/FreeSpacenav/libspnav
           cd libspnav
           ./configure
           gmake
