@@ -61,7 +61,7 @@ jobs:
 
     - name: install dependency libspnav
       run: |
-        git clone https://github.com/FreeSpacenav/libspnav
+        git clone --depth 1 https://github.com/FreeSpacenav/libspnav
         cd libspnav
         ./configure
         make
