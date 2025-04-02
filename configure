@@ -44,7 +44,7 @@ for arg; do
 		echo '  --disable-opt: disable speed optimizations'
 		echo '  --enable-debug: include debugging symbols (default)'
 		echo '  --disable-debug: do not include debugging symbols'
-		echo '  --qt5: use Qt 5.x (default)'
+		echo '  --qt5: use Qt 5.x'
 		echo '  --qt6: use Qt 6.x'
 		echo '  --qt-tooldir=<path>: location of moc, uic, and rcc, if not in PATH'
 		echo 'all invalid options are silently ignored'
@@ -52,15 +52,6 @@ for arg; do
 		;;
 	esac
 done
-
-# if qt version was not specified, try to auto-detect it
-if [ -z "$qtver" ]; then
-	if pkg-config --exists Qt6Widgets; then
-		qtver=6
-	else
-		qtver=5
-	fi
-fi
 
 check_moc_version()
 {
@@ -72,6 +63,25 @@ check_moc_version()
 	mocver=`$qtmoc --version 2>/dev/null | sed 's/moc //; s/\..*//'`
 }
 
+# if qt version was not specified, try to auto-detect it
+if [ -z "$qtver" ]; then
+	# if the tool location was specified, look for moc and use its version
+	if [ -n "$qttooldir" ]; then
+		check_moc_version
+		if [ -n "$mocver" ]; then
+			qtver=$mocver
+		fi
+
+	else
+		# if Qt6 is installed, default to that
+		if pkg-config --exists Qt6Widgets; then
+			qtver=6
+		else
+			qtver=5
+		fi
+	fi
+fi
+
 # check moc presence and version
 check_moc_version
 if [ $? != 0 -o "$mocver" != "$qtver" ]; then
@@ -80,12 +90,17 @@ if [ $? != 0 -o "$mocver" != "$qtver" ]; then
 		echo "can't find moc in the specified Qt tooldir: $qttooldir" >&2
 		exit 1
 	fi
-	# try to find moc
-	mocpath=`find /usr/lib/qt$qtver -name moc | head -1`
+
+	# look for moc in a few common locations
+	for i in /usr/lib/qt /usr/lib64/qt; do
+		mocpath=`find /usr/lib/qt$qtver -name moc | head -1`
+		[ -n "$mocpath" ] && break
+	done
 	if [ -z "$mocpath" ]; then
 		echo "failed to find Qt tools (moc,uic,rcc), use --qt-tooldir=<path> to specify their location" >&2
 		exit 1
 	fi
+
 	qttooldir=`dirname $mocpath`
 	check_moc_version
 fi
