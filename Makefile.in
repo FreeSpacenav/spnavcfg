@@ -8,19 +8,18 @@ bin = spnavcfg
 
 CC ?= gcc
 CXX ?= g++
-UIC ?= uic
-MOC ?= moc
-RCC ?= rcc
+UIC ?= $(qtuic)
+MOC ?= $(qtmoc)
+RCC ?= $(qtrcc)
 
 warn = -pedantic -Wall
 incpath = -I. -I$(PREFIX)/include
 libpath = -L$(PREFIX)/lib
 
 CFLAGS = $(warn) $(dbg) $(opt) $(incpath) -fPIC $(add_cflags) -MMD
-CXXFLAGS = -std=c++11 $(warn) $(dbg) $(opt) $(incpath) -fPIC `pkg-config --cflags Qt5Core Qt5Gui Qt5Widgets` \
+CXXFLAGS = $(warn) $(dbg) $(opt) $(incpath) -fPIC $(cflags_qt) \
 		 $(add_cflags) -MMD
-LDFLAGS = $(libpath) `pkg-config --libs Qt5Core Qt5Gui Qt5Widgets` -lspnav -lX11 \
-		  $(add_ldflags)
+LDFLAGS = $(libpath) $(libs_qt) -lspnav -lX11 $(add_ldflags)
 
 $(bin): $(obj)
 	$(CXX) -o $@ $(obj) $(LDFLAGS)
