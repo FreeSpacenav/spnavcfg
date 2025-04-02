@@ -35,6 +35,7 @@ jobs:
         # NOTE: plucky is 25.04 (not 24.04 LTS)
         wget -O - 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xc8ec952e2a0e1fbdc5090f6a2c277a0a352154e5' | sudo apt-key add -
         sudo add-apt-repository 'deb https://ppa.launchpadcontent.net/ubuntu-toolchain-r/test/ubuntu plucky main'
+
     - name: add repository "llvm-toolchain-[..]" for Clang 19
       if: "${{ matrix.cc == 'clang-19' }}"
       run: |-
