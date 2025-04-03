@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    name: build (${{ matrix.cc }} + Qt ${{ matrix.qt }})
 
     runs-on: ubuntu-latest
 
@@ -17,10 +18,13 @@ jobs:
       matrix:
         include:
           - cc: clang-19
+            qt: 5
           - cc: gcc-15
+            qt: 6
 
     env:
       CC: ${{ matrix.cc }}
+      QT_MAJOR_VERSION: ${{ matrix.qt }}
 
     steps:
     - uses: actions/checkout@v3
@@ -35,6 +39,7 @@ jobs:
         # NOTE: plucky is 25.04 (not 24.04 LTS)
         wget -O - 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xc8ec952e2a0e1fbdc5090f6a2c277a0a352154e5' | sudo apt-key add -
         sudo add-apt-repository 'deb https://ppa.launchpadcontent.net/ubuntu-toolchain-r/test/ubuntu plucky main'
+
     - name: add repository "llvm-toolchain-[..]" for Clang 19
       if: "${{ matrix.cc == 'clang-19' }}"
       run: |-
@@ -46,7 +51,12 @@ jobs:
     - name: install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install qtbase5-dev
+        if [[ "${QT_MAJOR_VERSION}" == 5 ]]; then
+          sudo apt-get install qtbase5-dev
+        else
+          [[ "${QT_MAJOR_VERSION}" == 6 ]]  # i.e. assert
+          sudo apt-get install qt6-base-dev
+        fi
 
     - name: install dependency Clang 19
       if: "${{ matrix.cc == 'clang-19' }}"
@@ -70,7 +80,9 @@ jobs:
         sudo make install
 
     - name: configure
-      run: ./configure
+      run: |
+        set -o pipefail
+        ./configure |& tee /dev/stderr | grep -q -F "using Qt ${QT_MAJOR_VERSION}"  # i.e assert use of expected version of Qt
 
     - name: build
       run: make
@@ -80,7 +92,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: spnavcfg-gnulinux-${{ matrix.cc }}
+        name: spnavcfg-gnulinux-${{ matrix.cc }}-qt${{ matrix.qt }}
         path: spnavcfg-gnulinux
 
 # vi:ts=2 sts=2 sw=2 expandtab:
