@@ -93,7 +93,7 @@ if [ $? != 0 -o "$mocver" != "$qtver" ]; then
 
 	# look for moc in a few common locations
 	for i in /usr/lib/qt /usr/lib64/qt; do
-		mocpath=`find /usr/lib/qt$qtver -name moc | head -1`
+		mocpath=`find $i$qtver -name moc 2>/dev/null | head -1`
 		[ -n "$mocpath" ] && break
 	done
 	if [ -z "$mocpath" ]; then
@@ -110,10 +110,10 @@ if [ "$mocver" != "$qtver" ]; then
 	exit 1
 fi
 
-if [ "$qtver" -ge 6 ]; then
-	cstd=c++17
-else
+if [ "$qtver" = 5 ]; then
 	cstd=c++11
+else
+	cstd=c++17
 fi
 
 
