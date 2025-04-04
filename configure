@@ -64,21 +64,20 @@ check_moc_version()
 }
 
 # if qt version was not specified, try to auto-detect it
+# if the tool location was specified, look for moc and use its version
+if [ -z "$qtver" -a -n "$qttooldir" ]; then
+	check_moc_version
+	if [ -n "$mocver" ]; then
+		qtver=$mocver
+	fi
+fi
+#if we still don't have a qt version ...
 if [ -z "$qtver" ]; then
-	# if the tool location was specified, look for moc and use its version
-	if [ -n "$qttooldir" ]; then
-		check_moc_version
-		if [ -n "$mocver" ]; then
-			qtver=$mocver
-		fi
-
+	# if Qt6 is installed, default to that
+	if pkg-config --exists Qt6Widgets; then
+		qtver=6
 	else
-		# if Qt6 is installed, default to that
-		if pkg-config --exists Qt6Widgets; then
-			qtver=6
-		else
-			qtver=5
-		fi
+		qtver=5
 	fi
 fi
 
@@ -92,7 +91,7 @@ if [ $? != 0 -o "$mocver" != "$qtver" ]; then
 	fi
 
 	# look for moc in a few common locations
-	for i in /usr/lib/qt /usr/lib64/qt; do
+	for i in /usr/lib64/qt /usr/lib/qt; do
 		mocpath=`find $i$qtver -name moc 2>/dev/null | head -1`
 		[ -n "$mocpath" ] && break
 	done
