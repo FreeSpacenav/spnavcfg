@@ -90,9 +90,11 @@ if [ $? != 0 -o "$mocver" != "$qtver" ]; then
 		exit 1
 	fi
 
+	qtsearchpaths='/usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib'
+
 	# look for moc in a few common locations
-	for i in /usr/lib64/qt /usr/lib/qt; do
-		mocpath=`find $i$qtver -name moc 2>/dev/null | head -1`
+	for i in $qtsearchpaths; do
+		mocpath=`find $i/qt$qtver -name moc 2>/dev/null | head -1`
 		[ -n "$mocpath" ] && break
 	done
 	if [ -z "$mocpath" ]; then

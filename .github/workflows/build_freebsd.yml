@@ -30,7 +30,7 @@ jobs:
 
         run: |
           ./configure
-          gmake UIC=uic-qt5 MOC=moc-qt5 RCC=rcc-qt5
+          gmake
           gmake DESTDIR=spnavcfg-freebsd install
 
     - uses: actions/upload-artifact@v4
