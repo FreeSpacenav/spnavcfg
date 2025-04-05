@@ -9,8 +9,19 @@ on:
 
 jobs:
   build:
+    name: build (Qt ${{ matrix.qt }})
 
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - qt: 5
+          - qt: 6
+
+    env:
+      QTVER: ${{ matrix.qt }}
 
     steps:
     - uses: actions/checkout@v3
@@ -20,8 +31,14 @@ jobs:
     - name: FreeBSD build
       uses: vmactions/freebsd-vm@v1
       with:
+        envs: QTVER
+        usesh: true
         prepare: |
-          pkg install -y git gmake libX11 qt6 qt6-tools pkgconf
+          if [ "${QTVER}" == 5 ]; then
+            pkg install -y git gmake libX11 qt5-core qt5-gui qt5-widgets qt5-buildtools pkgconf
+          else
+            pkg install -y git gmake libX11 qt6 pkgconf
+          fi
           git clone --depth 1 https://github.com/FreeSpacenav/libspnav
           cd libspnav
           ./configure
@@ -29,13 +46,13 @@ jobs:
           gmake install
 
         run: |
-          ./configure
+          ./configure --qt${QTVER}
           gmake
           gmake DESTDIR=spnavcfg-freebsd install
 
     - uses: actions/upload-artifact@v4
       with:
-        name: spnavcfg-freebsd
+        name: spnavcfg-freebsd-qt${{ matrix.qt }}
         path: spnavcfg-freebsd
 
 # vi:ts=2 sts=2 sw=2 expandtab:

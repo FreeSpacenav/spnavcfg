@@ -90,7 +90,8 @@ if [ $? != 0 -o "$mocver" != "$qtver" ]; then
 		exit 1
 	fi
 
-	qtsearchpaths='/usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib'
+	qtsearchpaths='/usr/lib64 /usr/lib /usr/libexec \
+		/usr/local/lib64 /usr/local/lib /usr/local/libexec'
 
 	# look for moc in a few common locations
 	for i in $qtsearchpaths; do
