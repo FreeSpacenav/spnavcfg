@@ -35,11 +35,17 @@ Installation
 ------------
 First make sure you have the dependencies installed:
   - libspnav v1.0 or higher
-  - Qt 5 (core, gui, and widgets).
+  - Qt 5 or Qt 6 (core, gui, and widgets)
 
 To build just run `./configure`, `make`, and `make install` as usual.
 The `make install` part will probably need to be executed as root, if you're
 installing system-wide.
+
+Configure will try to detect which version of Qt to use. If you have both
+installed, and would like to force it to use one or the other, you can pass
+`--qt5` or `--qt6` to configure.  If configure fails to find your Qt
+installation, you can use `--qt-tooldir=...` to point it to the directory
+containing the `moc`, `uic`, and `rcc` binaries.
 
 For build options, see `./configure --help`.
 
@@ -62,9 +68,12 @@ FAQ
   1. **Q**: I'm trying to build spnavcfg, but the linker complains about missing
      functions starting with `spnav_cfg_`.
      
-     **A**: You need libspnav v1.0 or higher to build spnavcfg. If it is installed,
-     but you also have a previous version installed in a different path, please
-     remove it in case the linker finds that one first.
+     **A**: spnavcfg uses libspnav to communicate with spacenavd. Most likely,
+     you have an older version of libspnav installed, which lacks some feature
+     required by the current version of spnavcfg. Make sure you have the latest
+     version of libspnav installed, and remove any previous versions of libspnav
+     from the system. Also on GNU/Linux make sure to run `ldconfig` as root,
+     after installing libspnav.
 
   2. **Q**: When I ran spnavcfg, it immediately crashes with a SIGFPE.
      
