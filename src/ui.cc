@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ui_about.h"
 #include <QMessageBox>
 
-#include <X11/Xlib.h>
+#include <xkbcommon/xkbcommon.h>
 
 static QSlider *slider_sens_axis[6];
 static QCheckBox *chk_inv[6];
@@ -290,8 +290,8 @@ void MainWin::updateui()
 			bnrow[i].rad_action->setChecked(true);
 		}
 
-		char *str;
-		if(cfg.kbmap[i] > 0 && (str = XKeysymToString(cfg.kbmap[i]))) {
+		char str[64];
+		if(cfg.kbmap[i] > 0 && xkb_keysym_get_name(cfg.kbmap[i], str, sizeof str)) {
 			bnrow[i].rad_mapkey->setChecked(true);
 			bnrow[i].cmb_mapkey->setCurrentText(str);
 		}
@@ -640,8 +640,8 @@ void MainWin::combo_str_changed(const QString &qstr)
 			if(!str || !*str) return;
 
 			QLineEdit *ed = bnrow[i].cmb_mapkey->lineEdit();
-			KeySym sym = XStringToKeysym(str);
-			if(sym == NoSymbol) {
+			xkb_keysym_t sym = xkb_keysym_from_name(str, XKB_KEYSYM_NO_FLAGS);
+			if(sym == XKB_KEY_NoSymbol) {
 				QPalette cmap = def_cmb_cmap;
 				cmap.setColor(QPalette::Text, Qt::red);
 				ed->setPalette(cmap);

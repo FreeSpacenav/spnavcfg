@@ -19,7 +19,7 @@ jobs:
 
     - name: install dependencies
       run: |
-        brew install xquartz libx11 qt@5 pkg-config
+        brew install xquartz libxkbcommon qt@5 pkg-config
         brew link qt@5 --force
         git clone --depth 1 https://github.com/FreeSpacenav/libspnav
         cd libspnav
@@ -28,7 +28,7 @@ jobs:
         sudo make install
 
     - name: configure
-      run: CFLAGS=-I/usr/X11R6/include LDFLAGS=-L/usr/X11R6/lib ./configure
+      run: CFLAGS=-I/opt/homebrew/include LDFLAGS=-L/opt/homebrew/lib ./configure
 
     - name: build
       run: make

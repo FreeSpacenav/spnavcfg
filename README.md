@@ -35,6 +35,7 @@ Installation
 ------------
 First make sure you have the dependencies installed:
   - libspnav v1.0 or higher
+  - libxkbcommon
   - Qt 5 or Qt 6 (core, gui, and widgets)
 
 To build just run `./configure`, `make`, and `make install` as usual.
