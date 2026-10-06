@@ -63,7 +63,8 @@ install:
 	done
 	mkdir -p $(DESTDIR)$(PREFIX)/share/applications
 	cp -a icons/spnavcfg.desktop $(DESTDIR)$(PREFIX)/share/applications/
-
+	mkdir -p $(DESTDIR)$(PREFIX)/share/metainfo
+	cp -a icons/net.sourceforge.spacenav.spnavcfg.metainfo.xml $(DESTDIR)$(PREFIX)/share/metainfo/
 
 .PHONY: uninstall
 uninstall:
@@ -73,3 +74,4 @@ uninstall:
 		rm -f $${destdir}/spnavcfg.png; \
 	done
 	rm -f $(DESTDIR)$(PREFIX)/share/applications/spnavcfg.desktop
+	rm -f $(DESTDIR)$(PREFIX)/share/metainfo/net.sourceforge.spacenav.spnavcfg.metainfo.xml
